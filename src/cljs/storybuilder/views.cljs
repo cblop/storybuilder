@@ -6,9 +6,9 @@
 
 ;; GENERAL
 
-(def tab-list [{:id :tab1 :label "Tropes"}
-               {:id :tab2 :label "Scenes"}
-               {:id :tab3 :label "Story"}])
+(def tab-list [{:id :tab1 :label "Edit"}
+               {:id :tab2 :label "Arrange"}
+               {:id :tab3 :label "Play"}])
 
 (def spacer [com/gap :size "5px"])
 (def gap [com/gap :size "15px"])
@@ -26,7 +26,9 @@
      ]))
 
 
-;; TROPES
+;; EDIT
+
+;; -- TROPES
 
 (defn codemirror-inner []
   (let [codem (atom nil)
@@ -59,7 +61,6 @@
       :component-did-update update
       :display-name "codemirror-inner"})
     ))
-
 
 
 (defn new-trope []
@@ -117,13 +118,24 @@
    :class "btn-danger"
    :on-click #()])
 
-(defn tropes-tab []
+(defn edit-tab []
   (let [trope-text (re-frame/subscribe [:trope-text])
         cursor (re-frame/subscribe [:tropes-cursor-pos])
+        edit-facet (re-frame/subscribe [:edit-facet])
         ]
     [com/v-box
      :padding "25px"
      :children [
+                ;; [com/h-box
+                ;;  :justify :center
+                ;;  :children [
+                ;;             [com/horizontal-bar-tabs
+                ;;              :tabs [{:id :tropes :label "Tropes"} {:id :characters :label "Characters"} {:id :objects :label "Objects"}]
+                ;;              :model @edit-facet
+                ;;              :on-change #()
+                ;;              ]]]
+                ;; gap
+                ;; gap
                 [com/h-box
                  :justify :center
                  :children [
@@ -343,7 +355,7 @@
                           ]]]])
 
 
-(defn scenes-tab []
+(defn arrange-tab []
   (let [our-tropes (re-frame/subscribe [:our-tropes])]
     (do
       (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
@@ -353,8 +365,49 @@
 
 ;; STORY
 
-(defn story-tab []
-  [:p "story"])
+(defn text-div []
+  [:div
+   [:p "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque pretium mattis massa, in dapibus turpis. Mauris non consequat metus, vitae ultrices ante. Duis tincidunt consequat euismod. Sed luctus nisi a tincidunt tempor. Ut lacinia nisi neque, non vulputate odio ultrices vel. Sed elit elit, bibendum at orci ac, pulvinar molestie augue. Curabitur eget nunc dictum, tempor mi ac, dignissim nisl. Donec erat dui, rhoncus eu sem a, rutrum tempus tellus. Sed vestibulum, velit non lobortis placerat, lacus risus sagittis eros, a finibus velit libero eu ex. Praesent pretium porta mauris et efficitur. Sed efficitur eleifend iaculis."]
+   [:p "Sed ullamcorper orci eget velit sodales varius. Nam in dolor accumsan, gravida nisi nec, scelerisque ligula. Etiam urna mauris, semper sed dui ac, maximus scelerisque leo. Etiam sed velit et lacus aliquam semper. Curabitur velit nisl, mollis vel mi vitae, tempus rhoncus risus. Mauris bibendum imperdiet nulla, ut porta sem euismod vel. Nam ac sodales nunc. Fusce a turpis tellus. Vivamus sit amet sem eget enim tincidunt iaculis. Sed risus metus, auctor sed mi non, hendrerit feugiat justo. Praesent ornare, leo non rhoncus scelerisque, turpis augue iaculis elit, tincidunt imperdiet magna lectus sit amet neque. Interdum et malesuada fames ac ante ipsum primis in faucibus. Mauris nisl orci, gravida quis hendrerit ultrices, varius at purus"]
+   [:p "Phasellus odio nulla, vestibulum non feugiat ac, maximus eu neque. Praesent suscipit urna at eros pellentesque maximus. Proin eleifend mi dictum, eleifend neque condimentum, venenatis arcu. Sed id risus ac sapien sagittis congue ac a nunc. Vestibulum molestie tortor id mauris euismod, vel molestie ante feugiat. Proin vehicula, purus vitae sodales vulputate, orci quam ultricies mi, sit amet varius enim elit at nibh. Suspendisse et turpis luctus, pulvinar odio vitae, commodo nisi. Ut dignissim ligula vel nulla efficitur, non ultricies ante dignissim. Cras vel pellentesque est, sed malesuada lacus. Donec ut quam dolor. Proin dapibus sem lectus, quis imperdiet ante dapibus ac. Duis tincidunt dui magna, vitae euismod libero finibus ut."]
+   [:p "Curabitur aliquet rutrum ligula a fermentum. Pellentesque dignissim mauris maximus fermentum consequat. Morbi varius nulla ut eros malesuada lacinia. Donec a ipsum sit amet augue luctus fermentum. Morbi bibendum ligula nec mi semper tempor. Fusce quis rhoncus mauris. Integer quam mi, dapibus ac quam dignissim, faucibus ultrices leo. Donec rutrum commodo eros, eu placerat diam bibendum ac. Integer pretium, sem vitae ornare tempus, nisl lectus faucibus sem, in rhoncus purus est at elit. Nunc varius nulla augue, nec tincidunt tortor rutrum ac. Praesent dapibus lectus in congue ultricies. Fusce malesuada et sapien in consectetur. Integer quis pharetra ante."]
+   [:p "Praesent vehicula libero eget volutpat scelerisque. Maecenas eget ante dui. Nullam vel lacus sit amet magna aliquam maximus in id ante. Sed iaculis maximus purus, vitae molestie tellus porta in. Proin sagittis vestibulum felis quis gravida. Donec tristique in leo et lacinia. Nullam vestibulum faucibus elit id malesuada. Curabitur eget tortor a leo tempus porttitor."]])
+
+(defn output []
+  [com/scroller
+   :attr {:id "scroller"}
+   :v-scroll :auto
+   :height "400px"
+   :child [text-div]])
+
+(defn prompt []
+  [com/input-text
+   :model ""
+   :width "400px"
+   :on-change #()])
+
+(defn go-button []
+  [com/button
+   :label "Go!"
+   :class "btn-success"
+   :on-click #(re-frame/dispatch [:go-button])])
+
+(defn play-tab []
+  [com/v-box
+   :children
+   [
+    [com/h-box
+     :justify :center
+     :padding "40px 60px"
+     :children [
+                [output]]]
+    [com/h-box
+     :justify :center
+     :children [[:span {:style {:font-weight "bold" :font-size "22px"}} ">"]
+                spacer
+                [prompt]
+                gap
+                [go-button]]]]])
 
 
 (defn tabs []
@@ -367,9 +420,9 @@
 (defn content []
   (let [current-tab (re-frame/subscribe [:current-tab])]
     (case @current-tab
-      :tab1 [tropes-tab]
-      :tab2 [scenes-tab]
-      :tab3 [story-tab]
+      :tab1 [edit-tab]
+      :tab2 [arrange-tab]
+      :tab3 [play-tab]
       gap)))
 
 (defn main-panel []

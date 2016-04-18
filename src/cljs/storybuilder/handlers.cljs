@@ -110,6 +110,15 @@
        ))))
 
 (re-frame/register-handler
+ :go-button
+ (fn [db _]
+   (let [scroller (.getElementById js/document "scroller")]
+     (do
+       (aset scroller "scrollTop" (.-scrollHeight scroller))
+       db)))
+ )
+
+(re-frame/register-handler
  :add-trope
  (fn [db [_ id]]
    (assoc db :our-tropes (conj (vec (:our-tropes db)) {:id nil :subverted false}))))

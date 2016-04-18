@@ -8,4 +8,5 @@
    :current-tab :tab1
    :edit-trope-tab :edit
    :editing-trope nil
+   :edit-facet :tropes
    })

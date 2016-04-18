@@ -19,6 +19,11 @@
      (reaction match))))
 
 (re-frame/register-sub
+ :edit-facet
+ (fn [db _]
+   (reaction (:edit-facet @db))))
+
+(re-frame/register-sub
  :edit-trope-tab
  (fn [db _]
    (reaction (:edit-trope-tab @db))))
