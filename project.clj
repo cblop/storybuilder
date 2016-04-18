@@ -22,7 +22,7 @@
   :clean-targets ^{:protect false} ["resources/public/js/compiled" "target"]
 
   :figwheel {:css-dirs ["resources/public/css"]
-             :ring-handler storybuilder.handler/handler}
+             :ring-handler storybuilder.handler/app}
 
   :cljsbuild {:builds [{:id "dev"
                         :source-paths ["src/cljs"]

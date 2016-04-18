@@ -3,4 +3,9 @@
 (def default-db
   {:tropes-cursor-pos {"line" 0, "ch" 0}
    :trope-text ""
-   :current-tab :tab1})
+   :our-tropes []
+   :tropes []
+   :current-tab :tab1
+   :edit-trope-tab :edit
+   :editing-trope nil
+   })

@@ -60,6 +60,63 @@
       :display-name "codemirror-inner"})
     ))
 
+
+
+(defn new-trope []
+  [com/v-box
+   :children [
+              [com/label :label "Trope Name"]
+              spacer
+              [com/input-text
+               :width "100%"
+               :model ""
+               :on-change #()]
+              ]])
+
+(defn edit-trope-select []
+  (let [
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        all-tropes (re-frame/subscribe [:tropes])
+        editing-trope (re-frame/subscribe [:editing-trope])
+        ]
+    [com/v-box
+     :children [
+                [com/label :label "Trope Name"]
+                spacer
+                [com/single-dropdown
+                 :width "100%"
+                 :choices @all-tropes
+                 ;; :choices @all-tropes
+                 ;; :model (:id (nth @our-tropes n))
+                 :model @editing-trope
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:editing-trope %])
+                 ]]]))
+
+
+(defn edit-trope-tabs
+  []
+  (let [tabid (re-frame/subscribe [:edit-trope-tab])]
+    [com/v-box
+     :children [
+                [com/horizontal-bar-tabs
+                 :tabs [{:id :edit :label "Edit"} {:id :new :label "New"}]
+                 :model @tabid
+                 :on-change #(re-frame/dispatch [:edit-tab-changed %])
+                 ]
+                gap
+                (case @tabid
+                  :edit [edit-trope-select]
+                  :new [new-trope]
+                  gap)
+                ]]))
+
+(defn save-trope-button []
+  [com/button
+   :label "Save Trope"
+   :class "btn-danger"
+   :on-click #()])
+
 (defn tropes-tab []
   (let [trope-text (re-frame/subscribe [:trope-text])
         cursor (re-frame/subscribe [:tropes-cursor-pos])
@@ -71,9 +128,113 @@
                  :justify :center
                  :children [
                             [codemirror-inner {:text @trope-text
-                                               :cursor @cursor}]]]]]))
+                                               :cursor @cursor}]
+                            gap
+                            [com/v-box
+                             :width "300px"
+                             :children [
+                                        [edit-trope-tabs]
+                                        gap
+                                        [com/h-box
+                                         :justify :end
+                                         :children [
+                                                    [save-trope-button]]
+                                         ]
+                                        ]
+                             ]
+                            ]]]]))
 
 ;; SCENES
+
+
+(defn obj-select [type objs sel n]
+  (let [
+        ;; chars (re-frame/subscribe [:chars-for-archetype role])
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; this-trope (nth @our-tropes n)
+        ]
+    [com/v-box
+     :children [
+                [com/label :label type :style {:font-size "smaller"}]
+                spacer
+                [com/single-dropdown
+                 :width "250px"
+                 :choices objs
+                 ;; TODO: make random
+                 :model (:id sel)
+                 ;; :model nil
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:change-obj n % type])]]]))
+
+
+(defn char-select [role chars sel n]
+  (let [
+        ;; chars (re-frame/subscribe [:chars-for-archetype role])
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; this-trope (nth @our-tropes n)
+        ]
+    [com/v-box
+     :children [
+                [com/label :label role :style {:font-size "smaller"}]
+                spacer
+                [com/single-dropdown
+                 :width "250px"
+                 :choices chars
+                 ;; TODO: make random
+                 :model (:id sel)
+                 ;; :model nil
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:change-char n % role])]]]))
+
+
+(defn objects [n]
+  (let [
+        types (re-frame/subscribe [:types n])
+        all-objs (re-frame/subscribe [:objs-for-types @types])
+        our-tropes (re-frame/subscribe [:our-tropes])
+        sel-objs (:objects (nth @our-tropes n))
+        p (println "OBJS: ")
+        triples (map vector (set @types) (set @all-objs) sel-objs)
+        p (println triples)
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; archetypes (:archetypes (nth @our-tropes n))
+        ]
+    (if-not (or (empty? @types) (nil? @types))
+      [com/v-box
+       :style {:padding "20px" :background-color "#ffdd77" :border "#ffbb00 solid 2px"}
+       :children (concat [[com/label :label "Objects"] gap] (into []
+                             (apply concat (for [[x y z] triples]
+                                             [[obj-select x y z n] spacer]))
+                             ))
+       ])
+     ))
+
+(defn characters [n]
+  (let [
+        roles (re-frame/subscribe [:roles n])
+        subverted (re-frame/subscribe [:subverted? n])
+        all-chars (re-frame/subscribe [:chars-for-roles @roles])
+        our-tropes (re-frame/subscribe [:our-tropes])
+        sel-chars (:characters (nth @our-tropes n))
+        ;; s-chars (if (nil? sel-chars) (take (count @archetypes) (repeat nil)) sel-chars)
+        ;; chars (if @subverted (reverse @all-chars) @all-chars)
+        ;; p (println chars)
+        p (println "ROLES: ")
+        triples (map vector (set @roles) (set @all-chars) sel-chars)
+        p (println triples)
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; archetypes (:archetypes (nth @our-tropes n))
+        ]
+    (if-not (or (empty? @roles) (nil? @roles))
+      [com/v-box
+       :style {:padding "20px" :background-color "#ddddff" :border "#9999ff solid 2px"}
+       :children (concat [[com/label :label "Characters"] gap] (into []
+                             (apply concat (for [[x y z] triples]
+                                             [[char-select x y z n] spacer]))
+                             ))
+       ])
+     ))
+
 
 (defn trope-select [n]
   (let [our-tropes (re-frame/subscribe [:our-tropes])
@@ -82,16 +243,112 @@
      :children [
                 [com/label :label "Trope Name"]
                 spacer
-                [com/single-dropdown
-                 :width "300px"
-                 :choices @all-tropes
-                 :model (:id (nth @our-tropes n))
-                 :filter-box? true
-                 :on-change #(re-frame/dispatch [:change-trope n %])]]]))
+                [com/v-box
+                 :children [
+                            [com/single-dropdown
+                             :width "300px"
+                             :choices @all-tropes
+                             :model (:id (nth @our-tropes n))
+                             :filter-box? true
+                             :on-change #(re-frame/dispatch [:change-trope n %])]
+                            ;; gap
+
+                            ;; [save-trope-button]
+                            ]]]]))
+
+
+
+(defn subvert-trope [n]
+  (let [subverted (re-frame/subscribe [:subverted? n])]
+    [com/h-box
+     :justify :center
+     :children [
+                [com/button
+                 :class "btn-warning"
+                 :label (if @subverted "Un-subvert" "Subvert")
+                 :on-click #(re-frame/dispatch [:subvert-trope n])]]])
+  )
+
+
+(defn remove-trope [n]
+  [com/h-box
+   :justify :center
+   :children [
+              [com/button
+               :class "btn-danger"
+               :label "Delete"
+               :on-click #(re-frame/dispatch [:remove-trope n])]]]
+  )
+
+
+(defn trope-box [n]
+  (let [
+        subverted (re-frame/subscribe [:subverted? n])
+        roles (re-frame/subscribe [:roles n])
+        p (println "NTH: ")
+        p (println n)
+        ]
+    [com/v-box
+     :style (if @subverted {:background-color "#ffdddd" :border "#ff9999 solid 2px"}
+                {:background-color "#ddffdd"
+                 :border "2px solid #99ff99"})
+     :padding "10px"
+     :children [[trope-select n]
+                gap
+                [com/h-box
+                 :children [
+                            [characters n]
+                            gap
+                            [objects n]]]
+                gap
+                [com/h-box
+                 :justify :center
+                 :children [
+                            (if (> (count @roles) 1)
+                              [subvert-trope n])
+                            (if (and (> n 0) (> (count @roles) 1))
+                              gap)
+                            (if (> n 0)
+                              [remove-trope n])
+                            ]]
+                ]
+     ]))
+
+(defn trope-boxes []
+  (let [our-tropes (re-frame/subscribe [:our-tropes])
+        boxes (into [] (apply concat (for [t (range (count @our-tropes))] [[trope-box t] gap])))]
+    [com/v-box
+     :children boxes
+     ]))
+
+(defn add-trope []
+  [com/h-box
+   :justify :center
+   :children [
+              [com/md-circle-icon-button
+               :md-icon-name "zmdi-plus"
+               :emphasise? true
+               :on-click #(re-frame/dispatch [:add-trope])]]])
+
+(defn trope-content []
+  [com/h-box
+   :justify :center
+   :children [
+              [com/v-box
+               :margin "50px"
+               :width "630px"
+               :children [
+                          [trope-boxes]
+                          [add-trope]
+                          ]]]])
 
 
 (defn scenes-tab []
-  [:p "scenes"])
+  (let [our-tropes (re-frame/subscribe [:our-tropes])]
+    (do
+      (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
+      [trope-content])))
+
 
 
 ;; STORY
@@ -105,15 +362,15 @@
     [com/horizontal-tabs
      :model @current-tab
      :tabs tab-list
-     :on-change #(re-frame/dispatch [:tab-changed %]
-                     )]))
+     :on-change #(re-frame/dispatch [:tab-changed %])]))
 
 (defn content []
   (let [current-tab (re-frame/subscribe [:current-tab])]
     (case @current-tab
       :tab1 [tropes-tab]
       :tab2 [scenes-tab]
-      :tab3 [story-tab])))
+      :tab3 [story-tab]
+      gap)))
 
 (defn main-panel []
   (fn []

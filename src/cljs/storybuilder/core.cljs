@@ -15,5 +15,9 @@
 
 (defn ^:export init []
   (re-frame/dispatch-sync [:initialize-db])
+  (re-frame/dispatch-sync [:load-tropes])
+  (re-frame/dispatch-sync [:load-characters])
+  (re-frame/dispatch [:load-objects])
+  ;; (re-frame/dispatch [:load-stories])
   (mount-root)
   )

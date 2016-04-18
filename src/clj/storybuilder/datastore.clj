@@ -7,10 +7,16 @@
 (defonce conn (mg/connect))
 (def db (mg/get-db conn "storybuilder"))
 
+(defn reset-collection! [coll]
+  (mc/remove db coll))
+
+(defn stringify-ids [record]
+  (dissoc (assoc record :id (str (:_id record))) :_id))
+
 ;; TROPES
 
 (defn get-tropes []
-  (mc/find-maps db "tropes"))
+  (map stringify-ids (mc/find-maps db "tropes")))
 
 (defn new-trope [data]
   (mc/insert db "tropes" (merge {:_id (ObjectId.)} data)))
@@ -25,7 +31,7 @@
 ;; STORIES
 
 (defn get-stories []
-  (mc/find-maps db "stories"))
+  (map stringify-ids (mc/find-maps db "stories")))
 
 (defn new-story [data]
   (mc/insert db "stories" (merge {:_id (ObjectId.)} data)))
@@ -39,11 +45,11 @@
 ;; CHARACTERS
 
 (defn get-characters []
-  (mc/find-maps db "characters"))
+  (map stringify-ids (mc/find-maps db "characters")))
 
 ;; won't work, need to find role inside list
 (defn get-characters-by-role [role]
-  (mc/find-maps db "characters" {:roles role}))
+  (map stringify-ids (mc/find-maps db "characters" {:roles role})))
 
 (defn new-character [data]
   (mc/insert db "characters" (merge {:_id (ObjectId.)} data)))
@@ -58,7 +64,7 @@
 ;; OBJECTS
 
 (defn get-objects []
-  (mc/find-maps db "objects"))
+  (map stringify-ids (mc/find-maps db "objects")))
 
 (defn new-object [data]
   (mc/insert db "objects" (merge {:_id (ObjectId.)} data)))
