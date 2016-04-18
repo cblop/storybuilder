@@ -4,9 +4,15 @@
               [re-com.core :as com]))
 
 
+;; GENERAL
+
 (def tab-list [{:id :tab1 :label "Tropes"}
                {:id :tab2 :label "Scenes"}
                {:id :tab3 :label "Story"}])
+
+(def spacer [com/gap :size "5px"])
+(def gap [com/gap :size "15px"])
+
 
 (defn title []
   (fn []
@@ -18,6 +24,9 @@
                  :level :level1]
                 ]
      ]))
+
+
+;; TROPES
 
 (defn codemirror-inner []
   (let [codem (atom nil)
@@ -64,8 +73,28 @@
                             [codemirror-inner {:text @trope-text
                                                :cursor @cursor}]]]]]))
 
+;; SCENES
+
+(defn trope-select [n]
+  (let [our-tropes (re-frame/subscribe [:our-tropes])
+        all-tropes (re-frame/subscribe [:tropes])]
+    [com/v-box
+     :children [
+                [com/label :label "Trope Name"]
+                spacer
+                [com/single-dropdown
+                 :width "300px"
+                 :choices @all-tropes
+                 :model (:id (nth @our-tropes n))
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:change-trope n %])]]]))
+
+
 (defn scenes-tab []
   [:p "scenes"])
+
+
+;; STORY
 
 (defn story-tab []
   [:p "story"])

@@ -7,6 +7,9 @@
                  [cljs-ajax "0.5.4"]
                  [cljsjs/codemirror "5.11.0-1"]
                  [compojure "1.5.0"]
+                 [com.novemberain/monger "3.0.2"]
+                 [ring/ring-defaults "0.2.0"]
+                 [ring/ring-json "0.4.0"]
                  [ring "1.4.0"]]
 
   :min-lein-version "2.5.3"
