@@ -102,6 +102,11 @@
    (reaction (:error @db))))
 
 (re-frame/register-sub
+ :story-text
+ (fn [db _]
+   (reaction (:story-text @db))))
+
+(re-frame/register-sub
  :success
  (fn [db _]
    (reaction (:success @db))))

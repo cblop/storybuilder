@@ -37,6 +37,13 @@
    (assoc db :tropes response)))
 
 (re-frame/register-handler
+ :storygen-handler
+ (fn [db [_ response]]
+   (println "RESPONSE:")
+   (println response)
+   (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))))
+
+(re-frame/register-handler
  :success
  (fn [db _]
    (assoc db :success true)))
@@ -246,7 +253,21 @@
  (fn [db [_ tab-id]]
    (do
      (println db)
+     (if (= tab-id :tab3) (re-frame/dispatch [:generate-story]))
      (assoc db :current-tab tab-id))))
+
+(re-frame/register-handler
+ :generate-story
+ (fn [db _]
+   (let [our-tropes (re-frame/subscribe [:our-tropes])]
+     (do (POST (str host "/stories/new") {:params {:tropes @our-tropes}
+                                       :handler #(re-frame/dispatch [:storygen-handler %1])
+                                       :error-handler #(re-frame/dispatch [:error-handler %1])
+                                          :format :json
+                                          :response-format :json
+                                          :keywords? true
+                                          })))
+   db))
 
 (defn str-failure
   "Takes an augmented failure object and prints the error message"

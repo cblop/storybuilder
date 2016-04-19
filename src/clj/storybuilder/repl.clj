@@ -34,6 +34,17 @@
 
 (get-objects)
 
+(get-story
+ (:id (first (get-stories))))
+
+(get-stories)
+(:id (first (get-stories)))
+
+(reset-collection! "stories")
+
+(:id (first (get-stories)))
+
+
 (reset-collection! "objects")
 
 

@@ -1,6 +1,6 @@
 (ns storybuilder.handler
   (:require [compojure.core :refer :all]
-            [ring.util.response :refer [file-response]]
+            [ring.util.response :refer [response file-response]]
             [ring.middleware.json :as middleware]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             ;; [ring.middleware.defaults :refer [wrap-defaults api-defaults]]
@@ -14,7 +14,7 @@
   (POST "/tropes/edit" [& data] (edit-trope data))
   (POST "/tropes/delete" [id] (delete-trope id))
   (GET "/stories/" [] (get-stories))
-  (POST "/stories/new/" [data] (new-story data))
+  (POST "/stories/new" [& data] (response (new-story data)))
   (POST "/stories/edit/:id" [id data] (edit-story id data))
   (POST "/stories/delete/:id" [id] (delete-story id))
   (GET "/characters/" [] (get-characters))

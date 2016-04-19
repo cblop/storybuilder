@@ -37,8 +37,16 @@
 (defn get-stories []
   (map stringify-ids (mc/find-maps db "stories")))
 
+(defn get-story [id]
+  (stringify-ids (mc/find-one-as-map db "stories" {:_id (ObjectId. id)})))
+
 (defn new-story [data]
-  (mc/insert db "stories" (merge {:_id (ObjectId.)} data)))
+  (let [id (ObjectId.)]
+    (do
+      (mc/insert db "stories" (merge {:_id id} data))
+      ;; (generate-story id)
+      {:id (str id) :text "Testing..."}
+      )))
 
 (defn delete-story [id]
   (mc/remove-by-id db "stories" id))
