@@ -1,7 +1,11 @@
 (ns storybuilder.handlers
     (:require [re-frame.core :as re-frame]
-              [ajax.core :refer [GET POST PUT DELETE]]
-              [storybuilder.db :as db]))
+              [ajax.core :refer [GET POST]]
+              [storybuilder.db :as db]
+              [storybuilder.parser :refer [parse-trope]]
+              [instaparse.core :as insta]
+              [storybuilder.gen :refer [make-map]]
+              ))
 
 (def host "http://localhost:3449")
 
@@ -13,8 +17,18 @@
 (re-frame/register-handler
  :bad-response
  (fn [db [_ response]]
-   (println (str "BAD RESPONSE: " response))
-   db
+   (do
+     (println (str "BAD RESPONSE: " response))
+     db)
+   ))
+
+
+(re-frame/register-handler
+ :error-handler
+ (fn [db [_ response]]
+   (do
+     (println (str "SERVER ERROR: " response))
+     db)
    ))
 
 (re-frame/register-handler
@@ -22,6 +36,37 @@
  (fn [db [_ response]]
    (assoc db :tropes response)))
 
+(re-frame/register-handler
+ :success
+ (fn [db _]
+   (assoc db :success true)))
+
+
+(re-frame/register-handler
+ :clear-text
+ (fn [db _]
+   (assoc db :trope-text "")))
+
+
+(re-frame/register-handler
+ :delete-trope-handler
+ (fn [db [_ response]]
+   (if response (do
+                  (re-frame/dispatch [:load-tropes])
+                  (re-frame/dispatch [:clear-text])
+                  (re-frame/dispatch [:success])
+                  db)
+       (assoc db :error true))
+   ))
+
+(re-frame/register-handler
+ :edit-trope-handler
+ (fn [db [_ response]]
+   (if response (do
+                  (re-frame/dispatch [:load-tropes])
+                  (assoc db :success true))
+       (assoc db :error true))
+   ))
 
 (re-frame/register-handler
  :load-tropes
@@ -32,6 +77,18 @@
                                :keywords? true})
    db))
 
+(re-frame/register-handler
+ :delete-trope
+ (fn [db _]
+   (let [del-id (re-frame/subscribe [:editing-trope])]
+     (if (= :new @del-id)
+       (assoc db :trope-text "")
+       (POST (str host "/tropes/delete") {:params {:id @del-id}
+                                          :format :json
+                                          :handler #(re-frame/dispatch [:delete-trope-handler %1])
+                                          :error-handler #(re-frame/dispatch [:error-handler %1])}))
+     db
+     )))
 
 (re-frame/register-handler
  :load-characters-handler
@@ -80,6 +137,11 @@
      )))
 
 (re-frame/register-handler
+ :hide-error
+ (fn [db _]
+   (assoc db :error nil)))
+
+(re-frame/register-handler
  :remove-trope
  (fn [db [_ n]]
    (let [a (:our-tropes db)]
@@ -105,8 +167,10 @@
      (do
        ;; (println text)
        (assoc
-        (assoc db :trope-text text)
-        :tropes-cursor-pos cursor)
+        (assoc
+         (assoc db :trope-text text)
+         :tropes-cursor-pos cursor)
+        :success nil)
        ))))
 
 (re-frame/register-handler
@@ -124,6 +188,12 @@
    (assoc db :our-tropes (conj (vec (:our-tropes db)) {:id nil :subverted false}))))
 
 (re-frame/register-handler
+ :new-trope-name
+ (fn [db [_ text]]
+   (assoc-in db [:new-trope :label] text)
+   ))
+
+(re-frame/register-handler
  :editing-trope
  (fn [db [_ id]]
    (let [trope (re-frame/subscribe [:trope-for-id id])]
@@ -132,7 +202,44 @@
 (re-frame/register-handler
  :edit-tab-changed
  (fn [db [_ tab-id]]
-   (assoc db :edit-trope-tab tab-id)))
+   (let [editing (if (= tab-id :new) :new nil)]
+     (assoc (assoc (assoc db :edit-trope-tab tab-id) :editing-trope editing) :trope-text ""))))
+
+(re-frame/register-handler
+ :update-trope
+ (fn [db [_ hmap]]
+   (let [editing (re-frame/subscribe [:editing-trope])
+         name (re-frame/subscribe [:editing-trope-name])
+         removed (remove #(= (:id %) @editing) (:tropes db))
+         ]
+     (assoc db :tropes (merge removed (merge {:id @editing} {:label (:label @name)} (:trope hmap)))))))
+
+
+(re-frame/register-handler
+ :save-trope
+ (fn [db _]
+   (let [
+         trope-text (re-frame/subscribe [:trope-text])
+         trope (re-frame/subscribe [:editing-trope-name])
+         editing (re-frame/subscribe [:editing-trope])
+         new? (= :new @editing)
+         new-trope (assoc @trope :source @trope-text)]
+     (if new?
+       (do
+         (POST (str host "/tropes/new") {:params new-trope
+                                          :handler #(re-frame/dispatch [:edit-trope-handler %1])
+                                          :error-handler #(re-frame/dispatch [:error-handler %1])
+                                          :format :json
+                                         })
+         db)
+       (do
+         (POST (str host "/tropes/edit") {:params new-trope
+                                          :handler #(re-frame/dispatch [:edit-trope-handler %1])
+                                          :error-handler #(re-frame/dispatch [:error-handler %1])
+                                          :format :json
+                                          })
+         db)))
+   ))
 
 (re-frame/register-handler
  :tab-changed
@@ -140,6 +247,39 @@
    (do
      (println db)
      (assoc db :current-tab tab-id))))
+
+(defn str-failure
+  "Takes an augmented failure object and prints the error message"
+  [{:keys [line column text reason]}]
+  (let [
+        ermsg (str "Parse error at line " line ", column " column ".\n")
+        sorry "Check the javascript console for details."
+        ]
+    (str ermsg sorry)
+    ))
+
+(re-frame/register-handler
+ :parse-trope
+ (fn [db _]
+   (let [trope-text (re-frame/subscribe [:trope-text])
+         ptree (parse-trope @trope-text)
+         tmap (make-map ptree @trope-text)]
+     (do
+       (if (insta/failure? ptree)
+         (do
+           (println ptree)
+           (assoc db :error (str-failure (insta/get-failure ptree))))
+         (do
+           (println "PTREE: ")
+           (println ptree)
+           (println "MAP: ")
+           (println tmap)
+           (re-frame/dispatch [:update-trope tmap])
+           (re-frame/dispatch [:save-trope])
+           db
+           ))
+       ))
+   ))
 
 (re-frame/register-handler
  :initialize-db

@@ -5,11 +5,13 @@
                  [re-frame "0.7.0"]
                  [re-com "0.8.0"]
                  [cljs-ajax "0.5.4"]
+                 [eigenhombre/namejen "0.1.12"]
                  [cljsjs/codemirror "5.11.0-1"]
                  [compojure "1.5.0"]
                  [com.novemberain/monger "3.0.2"]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]
+                 [com.lucasbradstreet/instaparse-cljs "1.4.1.1"]
                  [ring "1.4.0"]]
 
   :min-lein-version "2.5.3"

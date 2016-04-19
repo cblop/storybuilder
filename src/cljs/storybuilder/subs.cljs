@@ -15,13 +15,21 @@
 (re-frame/register-sub
  :trope-for-id
  (fn [db [_ id]]
-   (let [match (first (filter #(= id (:id %)) (:tropes @db)))]
+   (let [new-trope (re-frame/subscribe [:new-trope])
+         match (if (= id :new) @new-trope
+                 (first (filter #(= id (:id %)) (:tropes @db))))]
      (reaction match))))
 
 (re-frame/register-sub
  :edit-facet
  (fn [db _]
    (reaction (:edit-facet @db))))
+
+
+(re-frame/register-sub
+ :new-trope
+ (fn [db _]
+   (reaction (:new-trope @db))))
 
 (re-frame/register-sub
  :edit-trope-tab
@@ -70,11 +78,33 @@
      (reaction objs))
    ))
 
+(re-frame/register-sub
+ :new-trope-name
+ (fn [db _]
+   (reaction (:label (:new-trope @db)))))
+
+(re-frame/register-sub
+ :editing-trope-name
+ (fn [db _]
+   (let [id (:editing-trope @db)
+         trope (re-frame/subscribe [:trope-for-id id])]
+     (reaction @trope))))
 
 (re-frame/register-sub
  :editing-trope
  (fn [db _]
    (reaction (:editing-trope @db))))
+
+
+(re-frame/register-sub
+ :error
+ (fn [db _]
+   (reaction (:error @db))))
+
+(re-frame/register-sub
+ :success
+ (fn [db _]
+   (reaction (:success @db))))
 
 (re-frame/register-sub
  :tropes

@@ -1,5 +1,6 @@
 (ns storybuilder.datastore
   (:require [monger.core :as mg]
+            [monger.result :refer [acknowledged?]]
             [monger.collection :as mc])
   (:import [com.mongodb MongoOptions ServerAddress]
            org.bson.types.ObjectId))
@@ -19,13 +20,16 @@
   (map stringify-ids (mc/find-maps db "tropes")))
 
 (defn new-trope [data]
-  (mc/insert db "tropes" (merge {:_id (ObjectId.)} data)))
+  (str (acknowledged? (mc/insert db "tropes" (merge {:_id (ObjectId.)} (dissoc data :id))))))
 
 (defn delete-trope [id]
-  (mc/remove-by-id db "tropes" id))
+  (let [new-id (ObjectId. (str id))]
+    (str (acknowledged? (mc/remove-by-id db "tropes" new-id)))))
 
-(defn edit-trope [id data]
-  (mc/update-by-id db "tropes" id data))
+(defn edit-trope [data]
+  (let [p (println data)
+        new-id (ObjectId. (str (:id data)))]
+    (str (acknowledged? (mc/update-by-id db "tropes" new-id (assoc (dissoc data :id) :_id new-id))))))
 
 
 ;; STORIES

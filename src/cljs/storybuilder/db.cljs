@@ -9,4 +9,6 @@
    :edit-trope-tab :edit
    :editing-trope nil
    :edit-facet :tropes
+   :error nil
+   :success nil
    })

@@ -64,15 +64,17 @@
 
 
 (defn new-trope []
-  [com/v-box
-   :children [
-              [com/label :label "Trope Name"]
-              spacer
-              [com/input-text
-               :width "100%"
-               :model ""
-               :on-change #()]
-              ]])
+  (let [new-trope (re-frame/subscribe [:new-trope])]
+    [com/v-box
+     :children [
+                [com/label :label "Trope Name"]
+                spacer
+                [com/input-text
+                 :width "100%"
+                 :model (if-not (nil? @new-trope) (:label @new-trope) "")
+                 :change-on-blur? false
+                 :on-change #(re-frame/dispatch [:new-trope-name %])]
+                ]]))
 
 (defn edit-trope-select []
   (let [
@@ -112,16 +114,27 @@
                   gap)
                 ]]))
 
+
+
+(defn delete-trope-button []
+  [com/button
+   :label "Delete"
+   :class "btn-danger"
+   :on-click #(re-frame/dispatch [:delete-trope])])
+
 (defn save-trope-button []
   [com/button
    :label "Save Trope"
-   :class "btn-danger"
-   :on-click #()])
+   :class "btn-primary"
+   :on-click #(re-frame/dispatch [:parse-trope])])
 
 (defn edit-tab []
   (let [trope-text (re-frame/subscribe [:trope-text])
         cursor (re-frame/subscribe [:tropes-cursor-pos])
         edit-facet (re-frame/subscribe [:edit-facet])
+        trope-name (re-frame/subscribe [:editing-trope-name])
+        error (re-frame/subscribe [:error])
+        success (re-frame/subscribe [:success])
         ]
     [com/v-box
      :padding "25px"
@@ -136,6 +149,8 @@
                 ;;              ]]]
                 ;; gap
                 ;; gap
+                (if @trope-name
+                  [com/title :style {:padding-left "40px" :padding-bottom "10px"} :level :level3 :label (str "\"" (if (= (:label @trope-name) "") "<no name>" (:label @trope-name)) "\" is a trope where:")])
                 [com/h-box
                  :justify :center
                  :children [
@@ -150,8 +165,19 @@
                                         [com/h-box
                                          :justify :end
                                          :children [
+                                                    spacer
+                                                    [delete-trope-button]
+                                                    spacer
                                                     [save-trope-button]]
                                          ]
+                                        gap
+                                        [com/h-box
+                                         :justify :end
+                                         :children [
+                                                    (if @success
+                                                      [:span {:style {:font-size "30px" :color "green"}} \u2713])
+                                                    (if @error
+                                                      [:span {:style {:font-size "30px" :color "red"}} \u2718])]]
                                         ]
                              ]
                             ]]]]))
@@ -172,6 +198,7 @@
                 [com/single-dropdown
                  :width "250px"
                  :choices objs
+                 :placeholder "(Randomly generated)"
                  ;; TODO: make random
                  :model (:id sel)
                  ;; :model nil
@@ -192,6 +219,7 @@
                 [com/single-dropdown
                  :width "250px"
                  :choices chars
+                 :placeholder "(Randomly generated)"
                  ;; TODO: make random
                  :model (:id sel)
                  ;; :model nil
@@ -425,10 +453,29 @@
       :tab3 [play-tab]
       gap)))
 
+
+(defn error-dialog [message]
+  (let [lines (clojure.string/split-lines message)]
+                [com/alert-box
+                 :id 1
+                 :alert-type :danger
+                 :heading (first lines)
+                 :body [:div (for [s (rest lines)] [:p s])]
+                 :closeable? true
+                 :on-close #(re-frame/dispatch [:hide-error])
+                 ]
+                )
+    )
+
 (defn main-panel []
   (fn []
-    [com/v-box
-     :height "100%"
-     :children [[title]
-                [tabs]
-                [content]]]))
+    (let [error (re-frame/subscribe [:error])]
+      [com/v-box
+       :height "100%"
+       :children [[title]
+                  [tabs]
+                  [content]
+                  (when @error
+                    [error-dialog @error]
+                    )
+                  ]])))
