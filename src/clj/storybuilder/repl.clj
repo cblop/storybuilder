@@ -40,6 +40,8 @@
 (get-stories)
 (:id (first (get-stories)))
 
+(get-stories)
+
 (reset-collection! "stories")
 
 (:id (first (get-stories)))

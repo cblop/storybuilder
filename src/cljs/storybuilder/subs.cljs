@@ -72,6 +72,13 @@
 
 
 (re-frame/register-sub
+ :charname-for-id
+ (fn [db [_ id]]
+   (let [match (first (filter #(= id (:id %)) (:characters @db)))]
+     (reaction (:label match)))))
+
+
+(re-frame/register-sub
  :objs-for-types
  (fn [db [_ types]]
    (let [objs (map (fn [x] (filter #(in? (:types %) x) (:objects @db))) types)]

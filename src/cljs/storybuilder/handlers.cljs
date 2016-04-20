@@ -14,6 +14,9 @@
   (keep-indexed #(if (not= %1 n) %2) coll))
 
 
+(defn indices [pred coll]
+  (keep-indexed #(when (pred %2) %1) coll))
+
 (re-frame/register-handler
  :bad-response
  (fn [db [_ response]]
@@ -165,6 +168,17 @@
          ]
      ;; (println (:our-tropes db))
      (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :subverted false :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
+
+
+(re-frame/register-handler
+ :change-char
+ (fn [db [_ n id role]]
+   (let [trope (nth (:our-tropes db) n)
+         chars (:characters trope)
+         tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
+         i (first (indices #(= % role) (:roles tro)))
+         charname (re-frame/subscribe [:charname-for-id id])]
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i {:id id :name @charname :role role}))))))
 
 (re-frame/register-handler
  :tropes-changed
