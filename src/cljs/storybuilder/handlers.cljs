@@ -180,6 +180,17 @@
          charname (re-frame/subscribe [:charname-for-id id])]
      (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i {:id id :name @charname :role role}))))))
 
+
+(re-frame/register-handler
+ :change-obj
+ (fn [db [_ n id type]]
+   (let [trope (nth (:our-tropes db) n)
+         objs (:objects trope)
+         tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
+         i (first (indices #(= % type) (:objects tro)))
+         objname (re-frame/subscribe [:objname-for-id id])]
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :objects] (assoc objs i {:id id :name @objname :type type}))))))
+
 (re-frame/register-handler
  :tropes-changed
  (fn [db [_ cm]]
