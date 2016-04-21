@@ -266,14 +266,14 @@
         :success nil)
        ))))
 
-;; (re-frame/register-handler
-;;  :go-button
-;;  (fn [db _]
-;;    (let [scroller (.getElementById js/document "scroller")]
-;;      (do
-;;        (aset scroller "scrollTop" (.-scrollHeight scroller))
-;;        db)))
-;;  )
+(re-frame/register-handler
+ :scroll-down
+ (fn [db _]
+   (let [scroller (.getElementById js/document "scroller")]
+     (do
+       (aset scroller "scrollTop" (.-scrollHeight scroller))
+       db)))
+ )
 
 ;; (re-frame/register-handler
 ;;  :go-button
@@ -398,6 +398,55 @@
  :change-player
  (fn [db [_ player]]
    (assoc db :player player)))
+
+(re-frame/register-handler
+ :update-story-verb
+ (fn [db [_ verb]]
+   (assoc db :story-verb verb)))
+
+
+(re-frame/register-handler
+ :update-story-object-a
+ (fn [db [_ object]]
+   (assoc db :story-object-a object)))
+
+
+(re-frame/register-handler
+ :update-story-object-b
+ (fn [db [_ object]]
+   (assoc db :story-object-a object)))
+
+
+(re-frame/register-handler
+ :story-event-handler
+ (fn [db [_ response]]
+   (assoc db :story-text (conj (vec (:story-text db)) (:text response)))))
+
+(re-frame/register-handler
+ :story-event
+ (fn [db _]
+   (let [verb (re-frame/subscribe [:story-verb])
+         object-a (re-frame/subscribe [:story-object-a])
+         object-b (re-frame/subscribe [:story-object-b])
+         player (re-frame/subscribe [:player])
+         story-id (re-frame/subscribe [:story-id])
+         ]
+     (do
+       (POST (str host "/stories/event") {:params
+                                          {:id @story-id
+                                           :player @player
+                                           :verb @verb
+                                           :object-a @object-a
+                                           :object-b @object-b}
+                                          :handler #(re-frame/dispatch [:story-event-handler %1])
+                                          :error-handler #(re-frame/dispatch [:error-handler %1])
+                                          :format :json
+                                          :response-format :json
+                                          :keywords? true
+                                          })
+       db))
+   ))
+
 
 
 (re-frame/register-handler

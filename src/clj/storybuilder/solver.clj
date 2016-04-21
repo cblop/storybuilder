@@ -1,6 +1,7 @@
 (ns storybuilder.solver
   (:require
    [storybuilder.instal :refer [event-name instal-file]]
+   [clojure.java.io :as io]
    [me.raynes.conch :refer [programs with-programs let-programs] :as sh]))
 
 (programs python clingo)
@@ -44,7 +45,17 @@
   (instal-file hmap (str "resources/story-" id ".ial")))
 
 (defn make-query [events id]
-  (spit (str "resources/query-" id ".lp") "observed(go(lukeSkywalker,space))"))
+  (spit (str "resources/query-" id ".lp") ""))
+
+(defn clean-up [id]
+  (do
+    (io/delete-file (str "resources/domain-" id ".idc"))
+    (io/delete-file (str "resources/story-" id ".ial"))
+    (io/delete-file (str "resources/temp-" id ".lp"))
+    (io/delete-file (str "resources/query-" id ".lp"))
+    (io/delete-file (str "resources/output-" id ".lp"))
+    true
+    ))
 
 (defn make-story [hmap id]
   (do
@@ -54,8 +65,23 @@
     (let [output (python "instal/instalsolve.py" "-v" "-i" (str "resources/story-" id ".ial") "-d" (str "resources/domain-" id ".idc") "-o" (str "resources/temp-" id ".lp") (str "resources/query-" id ".lp"))]
       (do
         (spit (str "resources/output-" id ".lp") output)
-        {:text output}))
+        ;; (clean-up id)
+        {:id id
+         :text "Welcome to the world of adventure!"}))
     ))
 
-(defn solve-story [hmap event])
+(defn event-to-text [{:keys [player verb object-a object-b]}]
+  (str "observed(" verb "(" (event-name player) (if object-a (str "," object-a (if object-b (str "," object-b)) ")")) ")\n"))
+
+(defn solve-story [id event]
+  (let [story (str "resources/story-" id ".ial")
+        domain (str "resources/domain-" id ".idc")
+        temp (str "resources/temp-" id ".lp")
+        query (str "resources/query-" id ".lp")
+        outfile (str "resources/output-" id ".lp")]
+    (do
+      (spit query (event-to-text event) :append true)
+      (let [output (python "instal/instalsolve.py" "-v" "-i" story "-d" domain "-o" temp query)]
+        (spit outfile output)
+        {:text output}))))
 

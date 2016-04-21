@@ -13,4 +13,8 @@
    :error nil
    :success nil
    :story-text []
+   :story-verb nil
+   :story-object-a nil
+   :story-object-b nil
+   :story-id nil
    })

@@ -185,7 +185,6 @@
 ;; SCENES
 
 
-
 (defn place-select [loc places sel n]
   (let [
         ;; chars (re-frame/subscribe [:chars-for-archetype role])
@@ -442,14 +441,18 @@
 
 (defn text-div []
   (let [story (re-frame/subscribe [:story-text])]
+    ;; [:div
+    ;;  [:p (reduce str (interpose "\n" @story))]
+    ;;  ]
     [:div
-     (for [x @story] [:p x])]))
+     (for [x @story] [:div [:p x] [:br]])]
+    ))
 
 (defn output []
   [com/scroller
    :attr {:id "scroller"}
    :v-scroll :auto
-   :height "400px"
+   :height "390px"
    :child [text-div]])
 
 (defn prompt []
@@ -468,6 +471,7 @@
   (let [
         chars (re-frame/subscribe [:our-characters])
         info (map #(assoc % :label (str (:label %) " (" (:role %) ")")) (remove nil? @chars))
+        player (re-frame/subscribe [:player])
         ]
     [com/v-box
      :children [
@@ -480,37 +484,39 @@
                  :width "300px"
                  :choices info
                  :placeholder "(Random selection)"
-                 :model nil
+                 :model @player
                  :filter-box? true
                  :on-change #(re-frame/dispatch [:change-player %])]]]))
 
 (defn action-boxes []
-  (let []
+  (let [verb (re-frame/subscribe [:story-verb])
+        object-a (re-frame/subscribe [:story-object-a])
+        object-b (re-frame/subscribe [:story-object-b])]
     [com/h-box
      :justify :center
      :children [
                 [com/single-dropdown
                  :width "250px"
                  :placeholder "<verb>"
-                 :choices [{:id :1 :label "go"}
-                           {:id :2 :label "meet"}
+                 :choices [{:id :go :label "go"}
+                           {:id :meet :label "meet"}
                            ]
-                 :model nil
-                 :on-change #()]
+                 :model @verb
+                 :on-change #(re-frame/dispatch [:update-story-verb %])]
                 [:span {:style {:padding "5px 10px"}} "the"]
                 [com/single-dropdown
                  :width "250px"
                  :placeholder "<object>"
-                 :choices [{:id :1 :label "Tatooine"}
-                           {:id :2 :label "Space"}
-                           {:id :3 :label "Obi Wan"}]
-                 :model nil
-                 :on-change #()]
+                 :choices [{:id :tatooine :label "Tatooine"}
+                           {:id :space :label "Space"}
+                           {:id :obi :label "Obi Wan"}]
+                 :model @object-a
+                 :on-change #(re-frame/dispatch [:update-story-object-a %])]
                 gap
                 [com/button
                  :label "Go!"
                  :class "btn-success"
-                 :on-click #()]
+                 :on-click #(re-frame/dispatch [:story-event])]
                 ]
      ]))
 

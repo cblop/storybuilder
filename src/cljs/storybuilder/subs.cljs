@@ -27,6 +27,24 @@
 
 
 (re-frame/register-sub
+ :story-verb
+ (fn [db _]
+   (reaction (:story-verb @db))))
+
+
+(re-frame/register-sub
+ :story-object-a
+ (fn [db _]
+   (reaction (:story-object-a @db))))
+
+
+(re-frame/register-sub
+ :story-object-b
+ (fn [db _]
+   (reaction (:story-object-b @db))))
+
+
+(re-frame/register-sub
  :new-trope
  (fn [db _]
    (reaction (:new-trope @db))))
@@ -169,7 +187,15 @@
 (re-frame/register-sub
  :story-text
  (fn [db _]
-   (reaction (:story-text @db))))
+   (do
+     (re-frame/dispatch [:scroll-down])
+     (reaction (:story-text @db)))))
+
+
+(re-frame/register-sub
+ :story-id
+ (fn [db _]
+   (reaction (:story-id @db))))
 
 (re-frame/register-sub
  :success

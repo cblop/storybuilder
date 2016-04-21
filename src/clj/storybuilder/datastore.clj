@@ -9,6 +9,8 @@
 (defonce conn (mg/connect))
 (def db (mg/get-db conn "storybuilder"))
 
+(declare get-character-by-id)
+
 (defn reset-collection! [coll]
   (mc/remove db coll))
 
@@ -56,10 +58,11 @@
 
 (defn update-story [data]
   (let [id (:id data)
-        event (:event data)
-        ;; player (:player data)
-        story (get-story id)]
-    (solve-story story event)
+        player (get-character-by-id (:player data))
+        event (assoc data :player (:label player))
+        ;; story (get-story id)
+        ]
+    (solve-story id event)
     ))
 
 (defn delete-story [id]
@@ -72,6 +75,11 @@
 
 (defn get-characters []
   (map stringify-ids (mc/find-maps db "characters")))
+
+
+(defn get-character-by-id [char]
+  (let [oid (ObjectId. char)]
+    (stringify-ids (mc/find-one-as-map db "characters" {:_id oid}))))
 
 ;; won't work, need to find role inside list
 ;; (defn get-characters-by-role [role]
