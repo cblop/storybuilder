@@ -50,7 +50,7 @@
     (do
       (mc/insert db "stories" (merge {:_id id} data))
       ;; (make-story (assoc data :tropes (map get-trope-by-id (:tropes data))))
-      (make-story data)
+      (make-story data (str id))
       ;; {:id (str id) :text "Testing..."}
       )))
 

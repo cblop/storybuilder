@@ -484,6 +484,10 @@
                  :filter-box? true
                  :on-change #(re-frame/dispatch [:change-player %])]]]))
 
+(defn action-boxes []
+  (let []
+    [:div]))
+
 (defn play-tab []
   (let [story-text (re-frame/subscribe [:story-text])]
     [com/v-box
@@ -502,11 +506,16 @@
                                  :justify :center
                                  :children [
                                             [go-button]]]]]]]
-        [com/h-box
-         :justify :center
-         :padding "40px 60px"
+        [com/v-box
          :children [
-                    [output]]])
+                    [com/h-box
+                     :justify :center
+                     :padding "40px 60px"
+                     :children [
+                                [output]]]
+                    gap
+                    [action-boxes]]]
+        )
       ;; [com/h-box
       ;;  :justify :center
       ;;  :children [[:span {:style {:font-weight "bold" :font-size "22px"}} ">"]

@@ -174,13 +174,16 @@
      (assoc db :our-tropes (drop-nth n a)))))
 
 (defn random-character [role]
-  {:id :random-char :label "Random Character" :role role})
+  (do
+    {:id :random-char :label "Random Character" :role role}))
 
 (defn random-object [type]
-  {:id :random-obj :label "Random Object" :type type})
+  (do
+    {:id :random-obj :label "Random Object" :type type}))
 
 (defn random-place [loc]
-  {:id :random-place :label "Random Place" :location loc})
+  (do
+    {:id :random-place :label "Random Place" :location loc}))
 
 (re-frame/register-handler
  :change-trope
@@ -191,7 +194,7 @@
          locs (:locations trope)
          ]
      ;; (println (:our-tropes db))
-     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :label (:label trope) :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
+     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :label (:label trope) :events (:events trope) :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
 
 
 (re-frame/register-handler
@@ -404,8 +407,16 @@
          our-characters (re-frame/subscribe [:our-characters])
          our-objects (re-frame/subscribe [:our-objects])
          our-places (re-frame/subscribe [:our-places])
-         player (re-frame/subscribe [:player])]
-     (do (POST (str host "/stories/new") {:params {:tropes @our-tropes
+         player (re-frame/subscribe [:player])
+         role-pairs (map #(hash-map :class (:role %) :iname (:label %)) @our-characters)
+         obj-pairs (map #(hash-map :class (:type %) :iname (:label %)) @our-objects)
+         place-pairs (map #(hash-map :class (:location %) :iname (:label %)) @our-places)
+         story {:storyname "story"
+                :tropes (map :label @our-tropes)
+                :instances (concat role-pairs obj-pairs place-pairs)
+                }]
+     (do (POST (str host "/stories/new") {:params {:story story
+                                                   :tropes @our-tropes
                                                    :characters @our-characters
                                                    :objects @our-objects
                                                    :places @our-places
