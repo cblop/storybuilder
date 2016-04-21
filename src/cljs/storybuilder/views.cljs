@@ -486,7 +486,33 @@
 
 (defn action-boxes []
   (let []
-    [:div]))
+    [com/h-box
+     :justify :center
+     :children [
+                [com/single-dropdown
+                 :width "250px"
+                 :placeholder "<verb>"
+                 :choices [{:id :1 :label "go"}
+                           {:id :2 :label "meet"}
+                           ]
+                 :model nil
+                 :on-change #()]
+                [:span {:style {:padding "5px 10px"}} "the"]
+                [com/single-dropdown
+                 :width "250px"
+                 :placeholder "<object>"
+                 :choices [{:id :1 :label "Tatooine"}
+                           {:id :2 :label "Space"}
+                           {:id :3 :label "Obi Wan"}]
+                 :model nil
+                 :on-change #()]
+                gap
+                [com/button
+                 :label "Go!"
+                 :class "btn-success"
+                 :on-click #()]
+                ]
+     ]))
 
 (defn play-tab []
   (let [story-text (re-frame/subscribe [:story-text])]
@@ -509,12 +535,19 @@
         [com/v-box
          :children [
                     [com/h-box
+                     :padding "20px 0px 0px 210px"
+                     :children [
+                                [com/label
+                                 :label "What next?"
+                                 :style {:font-size "small"}]]]
+                    spacer
+                    [action-boxes]
+                    [com/h-box
                      :justify :center
                      :padding "40px 60px"
                      :children [
                                 [output]]]
-                    gap
-                    [action-boxes]]]
+                    ]]
         )
       ;; [com/h-box
       ;;  :justify :center
