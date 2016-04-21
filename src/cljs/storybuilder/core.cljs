@@ -18,6 +18,7 @@
   (re-frame/dispatch-sync [:load-tropes])
   (re-frame/dispatch-sync [:load-characters])
   (re-frame/dispatch [:load-objects])
+  (re-frame/dispatch [:load-places])
   ;; (re-frame/dispatch [:load-stories])
   (mount-root)
   )

@@ -60,8 +60,8 @@
   (map stringify-ids (mc/find-maps db "characters")))
 
 ;; won't work, need to find role inside list
-(defn get-characters-by-role [role]
-  (map stringify-ids (mc/find-maps db "characters" {:roles role})))
+;; (defn get-characters-by-role [role]
+;;   (map stringify-ids (mc/find-maps db "characters" {:roles role})))
 
 (defn new-character [data]
   (mc/insert db "characters" (merge {:_id (ObjectId.)} data)))
@@ -86,3 +86,18 @@
 
 (defn edit-object [id data]
   (mc/update-by-id db "objects" id data))
+
+
+;; PLACES
+
+(defn get-places []
+  (map stringify-ids (mc/find-maps db "places")))
+
+(defn new-place [data]
+  (mc/insert db "places" (merge {:_id (ObjectId.)} data)))
+
+(defn delete-place [id]
+  (mc/remove-by-id db "places" id))
+
+(defn edit-place [id data]
+  (mc/update-by-id db "places" id data))

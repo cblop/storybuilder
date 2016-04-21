@@ -47,6 +47,14 @@
    (let [trope (nth (:our-tropes @db) n)]
      (reaction (:subverted trope)))))
 
+
+(re-frame/register-sub
+ :locations
+ (fn [db [_ n]]
+   (let [tropeid (:id (nth (:our-tropes @db) n))
+         locations (:locations (first (filter #(= tropeid (:id %)) (:tropes @db))))]
+     (reaction locations))))
+
 (re-frame/register-sub
  :roles
  (fn [db [_ n]]
@@ -75,6 +83,21 @@
  :charname-for-id
  (fn [db [_ id]]
    (let [match (first (filter #(= id (:id %)) (:characters @db)))]
+     (reaction (:label match)))))
+
+
+(re-frame/register-sub
+ :places-for-locations
+ (fn [db [_ locs]]
+   (let [places (map (fn [x] (filter #(in? (:locations %) x) (:places @db))) locs)]
+     (reaction places))
+   ))
+
+
+(re-frame/register-sub
+ :placename-for-id
+ (fn [db [_ id]]
+   (let [match (first (filter #(= id (:id %)) (:places @db)))]
      (reaction (:label match)))))
 
 

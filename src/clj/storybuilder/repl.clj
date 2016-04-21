@@ -4,12 +4,14 @@
 (new-trope {:label "The Hero's Journey"
             :source "Lots of code\nGoes here\n..."
             :roles ["Hero" "Villain"]
+            :locations ["Home" "Away"]
             :objects ["Weapon"]})
 
 (new-trope {:label "Evil Empire"
             :source "Evil Empire code\nGoes here\n..."
             :roles ["Villain"]
-            :objects ["Hidden Base"]})
+            :locations ["Hidden Base"]
+            :objects ["MacGuffin"]})
 
 (get-tropes)
 
@@ -29,10 +31,25 @@
 (new-object {:label "Light Saber"
              :types ["Weapon"]})
 
-(new-object {:label "Death Star"
-             :types ["Hidden Base"]})
+(new-object {:label "Secret Plans"
+             :types ["MacGuffin"]})
+
 
 (get-objects)
+
+(reset-collection! "objects")
+
+
+(new-place {:label "Death Star"
+            :locations ["Hidden Base"]})
+
+(new-place {:label "Space"
+            :locations ["Away"]})
+
+(new-place {:label "Tatooine"
+            :locations ["Home"]})
+
+(get-places)
 
 (get-story
  (:id (first (get-stories))))

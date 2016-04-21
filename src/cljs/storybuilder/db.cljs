@@ -5,6 +5,7 @@
    :trope-text ""
    :our-tropes []
    :tropes []
+   :places []
    :current-tab :tab1
    :edit-trope-tab :edit
    :editing-trope nil

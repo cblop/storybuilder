@@ -185,6 +185,28 @@
 ;; SCENES
 
 
+
+(defn place-select [loc places sel n]
+  (let [
+        ;; chars (re-frame/subscribe [:chars-for-archetype role])
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; this-trope (nth @our-tropes n)
+        ]
+    [com/v-box
+     :children [
+                [com/label :label loc :style {:font-size "smaller"}]
+                spacer
+                [com/single-dropdown
+                 :width "180px"
+                 :choices places
+                 :placeholder "(Randomly generated)"
+                 ;; TODO: make random
+                 :model (:id sel)
+                 ;; :model nil
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:change-place n % loc])]]]))
+
+
 (defn obj-select [type objs sel n]
   (let [
         ;; chars (re-frame/subscribe [:chars-for-archetype role])
@@ -196,7 +218,7 @@
                 [com/label :label type :style {:font-size "smaller"}]
                 spacer
                 [com/single-dropdown
-                 :width "250px"
+                 :width "180px"
                  :choices objs
                  :placeholder "(Randomly generated)"
                  ;; TODO: make random
@@ -217,7 +239,7 @@
                 [com/label :label role :style {:font-size "smaller"}]
                 spacer
                 [com/single-dropdown
-                 :width "250px"
+                 :width "180px"
                  :choices chars
                  :placeholder "(Randomly generated)"
                  ;; TODO: make random
@@ -226,6 +248,28 @@
                  :filter-box? true
                  :on-change #(re-frame/dispatch [:change-char n % role])]]]))
 
+
+(defn places [n]
+  (let [
+        locs (re-frame/subscribe [:locations n])
+        all-places (re-frame/subscribe [:places-for-locations @locs])
+        our-tropes (re-frame/subscribe [:our-tropes])
+        sel-places (:places (nth @our-tropes n))
+        p (println "PLACES: ")
+        triples (map vector (set @locs) (set @all-places) sel-places)
+        p (println triples)
+        ;; our-tropes (re-frame/subscribe [:our-tropes])
+        ;; archetypes (:archetypes (nth @our-tropes n))
+        ]
+    (if-not (or (empty? @locs) (nil? @locs))
+      [com/v-box
+       :style {:padding "20px" :background-color "#ffdddd" :border "#ff9999 solid 2px"}
+       :children (concat [[com/label :label "Places"] gap] (into []
+                                                                  (apply concat (for [[x y z] triples]
+                                                                                  [[place-select x y z n] spacer]))
+                                                                  ))
+       ])
+    ))
 
 (defn objects [n]
   (let [
@@ -339,7 +383,10 @@
                  :children [
                             [characters n]
                             gap
-                            [objects n]]]
+                            [objects n]
+                            gap
+                            [places n]
+                            ]]
                 gap
                 [com/h-box
                  :justify :center
@@ -376,7 +423,7 @@
    :children [
               [com/v-box
                :margin "50px"
-               :width "630px"
+               :width "725px"
                :children [
                           [trope-boxes]
                           [add-trope]

@@ -117,6 +117,21 @@
 
 
 (re-frame/register-handler
+ :load-places-handler
+ (fn [db [_ response]]
+   (assoc db :places response)))
+
+(re-frame/register-handler
+ :load-places
+ (fn [db _]
+   (GET (str host "/places/") {:handler #(re-frame/dispatch [:load-places-handler %1])
+                                   :bad-response #(re-frame/dispatch [:bad-response %1])
+                                   :response-format :json
+                                   :keywords? true})
+   db))
+
+
+(re-frame/register-handler
  :load-objects-handler
  (fn [db [_ response]]
    (assoc db :objects response)))
@@ -165,9 +180,10 @@
    (let [trope (first (filter #(= (:id %) id) (:tropes db)))
          roles (:roles trope)
          objects (:objects trope)
+         locs (:locations trope)
          ]
      ;; (println (:our-tropes db))
-     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :subverted false :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
+     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
 
 
 (re-frame/register-handler
@@ -180,6 +196,16 @@
          charname (re-frame/subscribe [:charname-for-id id])]
      (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i {:id id :name @charname :role role}))))))
 
+
+(re-frame/register-handler
+ :change-place
+ (fn [db [_ n id loc]]
+   (let [trope (nth (:our-tropes db) n)
+         places (:places trope)
+         tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
+         i (first (indices #(= % loc) (:locations tro)))
+         placename (re-frame/subscribe [:placename-for-id id])]
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :places] (assoc places i {:id id :name @placename :location loc}))))))
 
 (re-frame/register-handler
  :change-obj

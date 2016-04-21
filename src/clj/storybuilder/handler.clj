@@ -18,7 +18,7 @@
   (POST "/stories/edit/:id" [id data] (edit-story id data))
   (POST "/stories/delete/:id" [id] (delete-story id))
   (GET "/characters/" [] (get-characters))
-  (GET "/characters/:role/" [role] (get-characters-by-role role))
+  ;; (GET "/characters/:role/" [role] (get-characters-by-role role))
   (POST "/characters/new/" [data] (new-character data))
   (POST "/characters/edit/:id" [id data] (edit-character id data))
   (POST "/characters/delete/:id" [id] (delete-character id))
@@ -26,6 +26,10 @@
   (POST "/objects/new/" [data] (new-object data))
   (POST "/objects/edit/:id" [id data] (edit-object id data))
   (POST "/objects/delete/:id" [id] (delete-object id))
+  (GET "/places/" [] (get-places))
+  (POST "/places/new/" [data] (new-place data))
+  (POST "/places/edit/:id" [id data] (edit-place id data))
+  (POST "/places/delete/:id" [id] (delete-place id))
   (GET "/hello" [] "Hello Wold"))
 
 (def app
