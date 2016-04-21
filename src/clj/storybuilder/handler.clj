@@ -15,6 +15,7 @@
   (POST "/tropes/delete" [id] (delete-trope id))
   (GET "/stories/" [] (get-stories))
   (POST "/stories/new" [& data] (response (new-story data)))
+  (POST "/stories/event" [& data] (response (update-story data)))
   (POST "/stories/edit/:id" [id data] (edit-story id data))
   (POST "/stories/delete/:id" [id] (delete-story id))
   (GET "/characters/" [] (get-characters))

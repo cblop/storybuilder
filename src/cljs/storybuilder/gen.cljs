@@ -56,7 +56,8 @@
     :event (partial merge)
     ;; :trope (fn [& args] {:trope {:roles (walk-get-key :role args)}})
     :trope (fn [& args] {:trope {:roles (vec (set (concat (walk-get-key :role (first args)) (walk-get-key :role-a (first args)) (walk-get-key :role-b (first args)))))
-                                 :objects (vec (set (concat (walk-get-key :object (first args)) (walk-get-key :place (first args)))))
+                                 :objects (vec (set (walk-get-key :object (first args))))
+                                 :places (vec (set (walk-get-key :place (first args))))
                                  :events (mapcat :events args)
                                  :situations (mapcat :situation args)}})
     ;; MESSY!

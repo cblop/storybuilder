@@ -383,9 +383,9 @@
                  :children [
                             [characters n]
                             gap
-                            [objects n]
-                            gap
                             [places n]
+                            gap
+                            [objects n]
                             ]]
                 gap
                 [com/h-box
@@ -462,24 +462,59 @@
   [com/button
    :label "Go!"
    :class "btn-success"
-   :on-click #(re-frame/dispatch [:go-button])])
+   :on-click #(re-frame/dispatch [:generate-story])])
+
+(defn player-select []
+  (let [
+        chars (re-frame/subscribe [:our-characters])
+        info (map #(assoc % :label (str (:label %) " (" (:role %) ")")) (remove nil? @chars))
+        ]
+    [com/v-box
+     :children [
+                [com/h-box
+                 :justify :center
+                 :children [
+                            [com/title :label "Who do you want to be?" :level :level3]]]
+                gap
+                [com/single-dropdown
+                 :width "300px"
+                 :choices info
+                 :placeholder "(Random selection)"
+                 :model nil
+                 :filter-box? true
+                 :on-change #(re-frame/dispatch [:change-player %])]]]))
 
 (defn play-tab []
-  [com/v-box
-   :children
-   [
-    [com/h-box
-     :justify :center
-     :padding "40px 60px"
-     :children [
-                [output]]]
-    [com/h-box
-     :justify :center
-     :children [[:span {:style {:font-weight "bold" :font-size "22px"}} ">"]
-                spacer
-                [prompt]
-                gap
-                [go-button]]]]])
+  (let [story-text (re-frame/subscribe [:story-text])]
+    [com/v-box
+     :children
+     [
+      (if (empty? @story-text)
+        [com/h-box
+         :justify :center
+         :padding "40px 60px"
+         :children [
+                    [com/v-box
+                     :children [
+                                [player-select]
+                                gap
+                                [com/h-box
+                                 :justify :center
+                                 :children [
+                                            [go-button]]]]]]]
+        [com/h-box
+         :justify :center
+         :padding "40px 60px"
+         :children [
+                    [output]]])
+      ;; [com/h-box
+      ;;  :justify :center
+      ;;  :children [[:span {:style {:font-weight "bold" :font-size "22px"}} ">"]
+      ;;             spacer
+      ;;             [prompt]
+      ;;             gap
+      ;;             [go-button]]]
+      ]]))
 
 
 (defn tabs []

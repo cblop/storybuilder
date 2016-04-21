@@ -12,5 +12,5 @@
    :edit-facet :tropes
    :error nil
    :success nil
-   :story-text [""]
+   :story-text []
    })

@@ -3,7 +3,7 @@
 
 (new-trope {:label "The Hero's Journey"
             :source "Lots of code\nGoes here\n..."
-            :roles ["Hero" "Villain"]
+            :roles ["Hero" "Villain" "Dispatcher"]
             :locations ["Home" "Away"]
             :objects ["Weapon"]})
 

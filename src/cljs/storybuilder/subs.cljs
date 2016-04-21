@@ -93,6 +93,34 @@
      (reaction places))
    ))
 
+(re-frame/register-sub
+ :our-characters
+ (fn [db _]
+   (let [tropes (:our-tropes @db)]
+     (reaction (mapcat :characters tropes)))
+   ))
+
+(re-frame/register-sub
+ :our-places
+ (fn [db _]
+   (let [tropes (:our-tropes @db)]
+     (reaction (mapcat :places tropes)))
+   ))
+
+(re-frame/register-sub
+ :our-objects
+ (fn [db _]
+   (let [tropes (:our-tropes @db)]
+     (reaction (mapcat :objects tropes)))
+   ))
+
+
+(re-frame/register-sub
+ :player
+ (fn [db _]
+     (reaction (:player @db)))
+   )
+
 
 (re-frame/register-sub
  :placename-for-id

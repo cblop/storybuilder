@@ -17,6 +17,7 @@
 (defn indices [pred coll]
   (keep-indexed #(when (pred %2) %1) coll))
 
+
 (re-frame/register-handler
  :bad-response
  (fn [db [_ response]]
@@ -172,7 +173,14 @@
    (let [a (:our-tropes db)]
      (assoc db :our-tropes (drop-nth n a)))))
 
+(defn random-character [role]
+  {:id :random-char :label "Random Character" :role role})
 
+(defn random-object [type]
+  {:id :random-obj :label "Random Object" :type type})
+
+(defn random-place [loc]
+  {:id :random-place :label "Random Place" :location loc})
 
 (re-frame/register-handler
  :change-trope
@@ -183,8 +191,32 @@
          locs (:locations trope)
          ]
      ;; (println (:our-tropes db))
-     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
+     (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :label (:label trope) :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
 
+
+(re-frame/register-handler
+ :change-nil-char
+ (fn [db [_ n i char]]
+   (let [trope (nth (:our-tropes db) n)
+         chars (:characters trope)]
+     (println (str "nILCHAR: " n i))
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i char))))))
+
+
+(re-frame/register-handler
+ :change-nil-obj
+ (fn [db [_ n i obj]]
+   (let [trope (nth (:our-tropes db) n)
+         objs (:objects trope)]
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :objects] (assoc objs i obj))))))
+
+
+(re-frame/register-handler
+ :change-nil-place
+ (fn [db [_ n i place]]
+   (let [trope (nth (:our-tropes db) n)
+         plcs (:places trope)]
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :places] (assoc plcs i place))))))
 
 (re-frame/register-handler
  :change-char
@@ -194,7 +226,7 @@
          tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
          i (first (indices #(= % role) (:roles tro)))
          charname (re-frame/subscribe [:charname-for-id id])]
-     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i {:id id :name @charname :role role}))))))
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :characters] (assoc chars i {:id id :label @charname :role role}))))))
 
 
 (re-frame/register-handler
@@ -205,7 +237,7 @@
          tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
          i (first (indices #(= % loc) (:locations tro)))
          placename (re-frame/subscribe [:placename-for-id id])]
-     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :places] (assoc places i {:id id :name @placename :location loc}))))))
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :places] (assoc places i {:id id :label @placename :location loc}))))))
 
 (re-frame/register-handler
  :change-obj
@@ -215,7 +247,7 @@
          tro (first (filter #(= (:id %) (:id trope)) (:tropes db)))
          i (first (indices #(= % type) (:objects tro)))
          objname (re-frame/subscribe [:objname-for-id id])]
-     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :objects] (assoc objs i {:id id :name @objname :type type}))))))
+     (assoc db :our-tropes (assoc-in (:our-tropes db) [n :objects] (assoc objs i {:id id :label @objname :type type}))))))
 
 (re-frame/register-handler
  :tropes-changed
@@ -231,14 +263,19 @@
         :success nil)
        ))))
 
-(re-frame/register-handler
- :go-button
- (fn [db _]
-   (let [scroller (.getElementById js/document "scroller")]
-     (do
-       (aset scroller "scrollTop" (.-scrollHeight scroller))
-       db)))
- )
+;; (re-frame/register-handler
+;;  :go-button
+;;  (fn [db _]
+;;    (let [scroller (.getElementById js/document "scroller")]
+;;      (do
+;;        (aset scroller "scrollTop" (.-scrollHeight scroller))
+;;        db)))
+;;  )
+
+;; (re-frame/register-handler
+;;  :go-button
+;;  (fn [db _]
+;;    db))
 
 (re-frame/register-handler
  :add-trope
@@ -299,19 +336,80 @@
          db)))
    ))
 
+
+(defn nil-indices [items]
+  (->> items
+       (map-indexed vector)
+       (filter #(nil? (second %)))
+       (map first)
+       ))
+
+(defn nil-types [items key tropeid]
+  (let [indices (nil-indices items)
+        trope (re-frame/subscribe [:trope-for-id tropeid])
+        types (get @trope key)
+        ]
+    (map #(vector % (nth types %)) indices)))
+
+(re-frame/register-handler
+ :generate-randoms
+ (fn [db _]
+   (let [our-tropes (re-frame/subscribe [:our-tropes])
+         nil-roles (keep-indexed #(vector %1 (nil-types (:characters %2) :roles (:id %2))) @our-tropes)
+         nil-objects (keep-indexed #(vector %1 (nil-types (:objects %2) :objects (:id %2))) @our-tropes)
+         nil-places (keep-indexed #(vector %1 (nil-types (:places %2) :locations (:id %2))) @our-tropes)
+         ]
+     (do
+       (println "ROLES:")
+       (println nil-roles)
+       (println "OBJs:")
+       (println nil-objects)
+       (println "PLACES:")
+       (println nil-places)
+       (doseq [nrs nil-roles]
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-char (first nrs) (first nss) (random-character (second nss))])))
+
+       (doseq [nrs nil-objects]
+         (if-not (empty? (second nrs))
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-obj (first nrs) (first nss) (random-object (second nss))]))))
+
+       (doseq [nrs nil-places]
+         (if-not (empty? (second nrs))
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-place (first nrs) (first nss) (random-place (second nss))]))))
+       db)
+     )
+     ))
+
 (re-frame/register-handler
  :tab-changed
  (fn [db [_ tab-id]]
    (do
      (println db)
-     (if (= tab-id :tab3) (re-frame/dispatch [:generate-story]))
+     (if (= tab-id :tab3) (re-frame/dispatch [:generate-randoms]))
      (assoc db :current-tab tab-id))))
+
+(re-frame/register-handler
+ :change-player
+ (fn [db [_ player]]
+   (assoc db :player player)))
+
 
 (re-frame/register-handler
  :generate-story
  (fn [db _]
-   (let [our-tropes (re-frame/subscribe [:our-tropes])]
-     (do (POST (str host "/stories/new") {:params {:tropes @our-tropes}
+   (let [our-tropes (re-frame/subscribe [:our-tropes])
+         our-characters (re-frame/subscribe [:our-characters])
+         our-objects (re-frame/subscribe [:our-objects])
+         our-places (re-frame/subscribe [:our-places])
+         player (re-frame/subscribe [:player])]
+     (do (POST (str host "/stories/new") {:params {:tropes @our-tropes
+                                                   :characters @our-characters
+                                                   :objects @our-objects
+                                                   :places @our-places
+                                                   :player @player}
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
