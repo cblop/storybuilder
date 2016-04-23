@@ -439,13 +439,39 @@
 
 ;; STORY
 
+
+(defn embellish [word]
+  (->> word
+       (split-with #(not (= (first %) (.toUpperCase (first %)))))
+       (map #(clojure.string/capitalize (apply str %)))
+       (interpose " ")
+       (reduce str)
+       (clojure.string/trim)))
+
+(defn describe-norms [text-list]
+  (let [intro (first text-list)
+        perms (map :perms text-list)
+        cgroups (map (fn [x] (group-by #(first (:params %)) x)) perms)
+        pstr-f (fn [x] (for [k (keys x)] (str (embellish k) " may: " (reduce str (interpose ", " (map #(str (:perm %) " " (second (:params %))) (get x k)))))))
+        c-perms (map pstr-f cgroups)
+        c-strs (map #(interpose "; \n" %) c-perms)
+
+        ;; chars (map (fn [x] (remove nil? (vec (set (map #(first (:params %)) x))))) perms)
+        ;; c-perms (remove nil? (map (fn [x] (filter #(= (first (:params %)) x) perms)) chars))
+        ]
+    ;; (concat [intro] (for [c c-perms] [(str (first (:params c)) ": " (map :perm c))]))
+    ;; (concat [intro] perms)
+    ;; (str perms)
+    (concat [intro] (map #(reduce str %) c-strs))
+    ))
+
 (defn text-div []
   (let [story (re-frame/subscribe [:story-text])]
     ;; [:div
     ;;  [:p (reduce str (interpose "\n" @story))]
     ;;  ]
     [:div
-     (for [x @story] [:div [:p x] [:br]])]
+     (for [x (describe-norms @story)] [:div [:p x] [:br]])]
     ))
 
 (defn output []
@@ -489,7 +515,9 @@
                  :on-change #(re-frame/dispatch [:change-player %])]]]))
 
 (defn action-boxes []
-  (let [verb (re-frame/subscribe [:story-verb])
+  (let [verbs (re-frame/subscribe [:story-verbs])
+        verb (re-frame/subscribe [:story-verb])
+        object-as (re-frame/subscribe [:story-objectas])
         object-a (re-frame/subscribe [:story-object-a])
         object-b (re-frame/subscribe [:story-object-b])]
     [com/h-box
@@ -498,18 +526,15 @@
                 [com/single-dropdown
                  :width "250px"
                  :placeholder "<verb>"
-                 :choices [{:id :go :label "go"}
-                           {:id :meet :label "meet"}
-                           ]
+                 :choices @verbs
                  :model @verb
                  :on-change #(re-frame/dispatch [:update-story-verb %])]
-                [:span {:style {:padding "5px 10px"}} "the"]
+                ;; [:span {:style {:padding "5px 10px"}} "the"]
+                gap
                 [com/single-dropdown
                  :width "250px"
                  :placeholder "<object>"
-                 :choices [{:id :tatooine :label "Tatooine"}
-                           {:id :space :label "Space"}
-                           {:id :obi :label "Obi Wan"}]
+                 :choices @object-as
                  :model @object-a
                  :on-change #(re-frame/dispatch [:update-story-object-a %])]
                 gap

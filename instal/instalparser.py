@@ -1,6 +1,7 @@
 #------------------------------------------------------------------------
 # VERSION TWO REVISION HISTORY:
 
+# 20160422 JAP: term2string extended to handle more complicated conditions
 # 20160415 JAP: dropped distinction between observed and compObserved
 # 20160412 JAP: removed print_domain function.  See updates to instalcompile.py.
 # 20160331 JAP: added comparison tokens from instalparser_v2 in TAAS tree
@@ -668,14 +669,21 @@ class makeInstalParser(object):
             self.instal_error("Syntax error at EOF")
 
     def term2string(self,p):
-        # print "term2string: p = ",p
+        # print("term2string: p = ",p)
         args = p[1]
         r=''
         if len(args)==0:
             r=p[0]
         elif len(args)==1:
             r=p[0]+'('+args[0]+')'
+        elif p[0] in ['==','!=','<','>','<=','>=']:
+            # assumes arguments are literals :(
+            r=p[1][0]+p[0]+p[1][1]
+        elif p[0] == 'and':
+            # print("p=",p)
+            r=self.term2string(p[1])+' '+p[0]+' '+self.term2string(p[2])
         else:
+            # print("args:",args)
             r='('+args[0]
             for x in args[1:]: r=r+','+x
             r=p[0]+r+')'
@@ -692,6 +700,7 @@ class makeInstalParser(object):
             r=p[0]+'('+self.term2string(p[1][0])+','+self.term2string(p[1][1])+','+self.term2string(p[1][2])+')'
         else:
             r=self.term2string(p)
+        # print("extendedterm2string=",r)
         return r
 
     # Global state variable used by typecheck and args2string

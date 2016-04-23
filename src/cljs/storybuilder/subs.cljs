@@ -191,6 +191,32 @@
      (re-frame/dispatch [:scroll-down])
      (reaction (:story-text @db)))))
 
+(defn make-dropdowns [things]
+  (map #(hash-map :id (:perm %) :label (:perm %)) things))
+
+(re-frame/register-sub
+ :story-verbs
+ (fn [db _]
+   (reaction (make-dropdowns (:story-perms @db)))))
+
+(re-frame/register-sub
+ :story-objectas
+ (fn [db _]
+   (let [perms (filter #(= (:perm %) (:story-verb @db)) (:story-perms @db))
+         params (map #(second (:params %)) perms)
+         dmap (map #(hash-map :id % :label %) params)]
+     (println "OBJECTAS:")
+     (println dmap)
+     (reaction dmap))))
+
+
+;; (re-frame/register-sub
+;;  :story-objectbs
+;;  (fn [db _]
+;;    (let [perms (filter #(= (:perm %) (:story-verb @db)) (:story-perms @db))
+;;          params (map #(nth (:params %) 2) perms)]
+;;      (reaction (make-dropdowns params)))))
+
 
 (re-frame/register-sub
  :story-id

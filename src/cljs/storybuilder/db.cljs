@@ -13,8 +13,9 @@
    :error nil
    :success nil
    :story-text []
-   :story-verb nil
-   :story-object-a nil
+   :story-verb "start"
+   :story-object-a "story"
    :story-object-b nil
    :story-id nil
+   :story-perms nil
    })

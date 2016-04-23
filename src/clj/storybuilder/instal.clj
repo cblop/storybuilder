@@ -189,7 +189,6 @@ or STRING to string"
    "type Phase;"
    "type Place;"
    "type PlaceName;"
-   "type Quest;"
    "type Object;"
    "type ObjectName;\n"])
 
@@ -362,7 +361,6 @@ or STRING to string"
         ls (map second (filter #(in? vs (first %)) ps))]
     ls))
 
-
 (defn get-obls [trope]
   (let [
         obls (map :obligation (filter :obligation (:events trope)))
@@ -516,6 +514,10 @@ or STRING to string"
           {}
           maps))
 
+(defn norm-str [event params]
+  (if (:obligation event) (obl event params)
+      (perm (event-str event params))))
+
 (defn initially [hmap]
   (let [
         header "\n% INITIALLY: -----------"
@@ -526,6 +528,12 @@ or STRING to string"
         role-list (map first (:roles params))
         place-list (map first (:places params))
         obj-list (map first (:objects params))
+        first-events (map first (map :events (:tropes hmap)))
+        ;; first-perms (map :perm (filter :perm first-events))
+        ;; fperm-strs (map #(perm (event-str % params)) first-perms)
+        fperm-strs (map #(str (norm-str % params) " if " (reduce str (interpose ", " (param-str % params)))) first-events)
+        ;; fperm-cnds (map #(param-str % params) first-events)
+        fperms fperm-strs
         ;event-name?
         roles (filter #(in? role-list (event-name (:class %))) instances)
         places (filter #(in? place-list (event-name (:class %))) instances)
@@ -543,24 +551,27 @@ or STRING to string"
                         (str "pow(" (inst-name (:label x))
                              "(" (reduce str (interpose ", " letters))
                              ;; ")) if " cnds)))
-                             "))"
-                             )))
+                             ;; "))"
+                             ;; )))
                              ;; this one -->
-                             ;; ")) if " (powifs letters))))
+                             ")) if " (powifs letters))))
+        ;; test ["perm(go(lukeSkywalker,tatooine))"]
         situations (mapcat :situations (:tropes hmap))
         wpnames (map #(str "pow(" (inst-name (:verb (:when %))) "(" (reduce str (interpose ", " (sit-letters %))) "))") situations)
         opnames (map #(str "pow(" % ")") (mapcat :names obls))
         powers (map powfn (:tropes hmap))
 
-        ;; powstrs (reduce str (map #(str "initially\n    " (reduce str %) ";\n") powers))
-        powstrs ""
+        first-perms (reduce str (map #(str "initially\n    " (reduce str %) ";\n") fperms))
+
+        powstrs (reduce str (map #(str "initially\n    " (reduce str %) ";\n") powers))
+        ;; powstrs ""
         ]
 
     ;; (concat rolestrs placestrs)
     ;; (concat role-list place-list)
     ;; roles
     ;; (map #(event-name (:class %)) instances)
-    [header (str powstrs "initially\n    " (reduce str (interpose ",\n    " (concat powers wpnames opnames phasestrs rolestrs placestrs objstrs))) ";\n")]
+    [header (str first-perms powstrs "initially\n    " (reduce str (interpose ",\n    " (concat wpnames opnames phasestrs rolestrs placestrs objstrs))) ";\n")]
     ;; (map :class instances)
     ))
 
@@ -575,9 +586,6 @@ or STRING to string"
         ]
     {:names wstrs :events wpvec :conds wpparams}))
 
-(defn norm-str [event params]
-  (if (:obligation event) (obl event params)
-    (perm (event-str event params))))
 
 (defn norm-params [ev params]
   (if (:obligation ev)  (mapcat #(param-str % params) [(:obligation ev) (:deadline (:obligation ev)) (:violation (:obligation ev))])

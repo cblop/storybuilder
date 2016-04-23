@@ -3,6 +3,7 @@
               [ajax.core :refer [GET POST]]
               [storybuilder.db :as db]
               [storybuilder.parser :refer [parse-trope]]
+              [storybuilder.output-parser :refer [trace-to-options]]
               [instaparse.core :as insta]
               [storybuilder.gen :refer [make-map]]
               ))
@@ -45,6 +46,7 @@
  (fn [db [_ response]]
    (println "RESPONSE:")
    (println response)
+   (re-frame/dispatch [:story-event])
    (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))))
 
 (re-frame/register-handler
@@ -420,7 +422,8 @@
 (re-frame/register-handler
  :story-event-handler
  (fn [db [_ response]]
-   (assoc db :story-text (conj (vec (:story-text db)) (:text response)))))
+   (let [options (trace-to-options (:text response))]
+     (assoc (assoc db :story-text (conj (vec (:story-text db)) options)) :story-perms (:perms options)))))
 
 (re-frame/register-handler
  :story-event

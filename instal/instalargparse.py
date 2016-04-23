@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+# 20160422 JAP: Add None check for domain_files for compilation only step
 # 20160413 JAP: removed -bd option and changed -d to allow multiple files
 # 20160405 JAP: removed arb function and changed all type=arb to type=str
 #               added g option for Gantt trace file
@@ -84,10 +85,11 @@ def getargs():
             sys.stderr.write("WARNING: Fact file extension incorrect (should be .iaf)\n")
 
     #Domain file checking
-    for domain_file in args.domain_files:
-        name,ext = os.path.splitext(domain_file)
-        if not ext == ".idc":
-            sys.stderr.write("WARNING: Domain file extension incorrect (should be .idc)\n")
+    if args.domain_files != None:
+        for domain_file in args.domain_files:
+            name,ext = os.path.splitext(domain_file)
+            if not ext == ".idc":
+                sys.stderr.write("WARNING: Domain file extension incorrect (should be .idc)\n")
 
     #bridge file checking
     if args.bridge_file and (not(args.input_files) or len(args.input_files)<2):
