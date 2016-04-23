@@ -451,10 +451,21 @@
 (defn describe-norms [text-list]
   (let [intro (first text-list)
         perms (map :perms text-list)
+        obls (map #(map :obl %) (map :obls text-list))
         cgroups (map (fn [x] (group-by #(first (:params %)) x)) perms)
-        pstr-f (fn [x] (for [k (keys x)] (str (embellish k) " may: " (reduce str (interpose ", " (map #(str (:perm %) " " (second (:params %))) (get x k)))))))
+        cogroups (map (fn [x] (group-by #(first (:params %)) x)) obls)
+        pstr-f (fn [x] (for [k (keys x)] (str (embellish k) " may: " (reduce str (interpose ", " (map #(str (:perm %) " " (reduce str (rest (:params %)))) (get x k)))))))
+        ;; o-str (fn [{:keys [event params deadline viol]}]
+        ;;         (str (embellish (first params)) " must: " event (reduce str (rest params))))
+        ostr-f (fn [x] (for [k (keys x)] (str (embellish k) " must: " (reduce str (interpose ", " (map #(str (:event %) " " (reduce str (rest (:params %)))) (get x k)))))))
         c-perms (map pstr-f cgroups)
-        c-strs (map #(interpose "; \n" %) c-perms)
+        c-obls (map ostr-f cogroups)
+        p-strs (map #(interpose "; \n" %) c-perms)
+        o-strs (map #(interpose "; \n" %) c-obls)
+        ;; o-strs (map str cogroups)
+        ;; o-strs (map #(map :obl %) (map :obls text-list))
+
+        c-strs (mapcat vector p-strs o-strs)
 
         ;; chars (map (fn [x] (remove nil? (vec (set (map #(first (:params %)) x))))) perms)
         ;; c-perms (remove nil? (map (fn [x] (filter #(= (first (:params %)) x) perms)) chars))
@@ -463,6 +474,7 @@
     ;; (concat [intro] perms)
     ;; (str perms)
     (concat [intro] (map #(reduce str %) c-strs))
+    ;; (map str text-list)
     ))
 
 (defn text-div []

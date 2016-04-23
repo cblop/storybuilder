@@ -135,16 +135,16 @@ or STRING to string"
                     (reduce str)
                     ;; (reduce str (param-str params))
                     ))
-        dead (if (nil? deadline) "noDeadline"
+        dead (if (nil? deadline) "noDeadline(Identity)"
                  (->> deadline
                      (ev-types)
                      (interpose ", ")
                      (reduce str)
                      ;; (reduce str (param-str params))
                      ))
-        viol (if (nil? violation) "noViolation"
+        viol (if (nil? violation) "noViolation(Identity)"
                  (viol-name {:obligation obligation}))]
-    (str "obl(" (:verb obligation) "(" obl "), " (:verb deadline) "(" dead ")" ", " viol ");")))
+    (str "obl(" (:verb obligation) "(" obl "), " (:verb deadline)  dead ", " viol ");")))
 
 (defn obl [{:keys [obligation]} params]
   (let [deadline (:deadline obligation)
@@ -154,9 +154,9 @@ or STRING to string"
                     (event-str params)
                     ;; (param-str params)
                     ))
-        dead (if (nil? deadline) "noDeadline"
+        dead (if (nil? deadline) "noDeadline(Identity)"
                  (event-str deadline params))
-        viol (if (nil? violation) "noViolation"
+        viol (if (nil? violation) "noViolation(Identity)"
                  (viol-name {:obligation obligation})
                      ;; (param-str params)
                      )
@@ -183,6 +183,7 @@ or STRING to string"
 
 (def types
   ["% TYPES ----------"
+   "type Identity;"
    "type Agent;"
    "type Role;"
    "type Trope;"
@@ -310,7 +311,7 @@ or STRING to string"
         all (concat events situations sperms)
         types (map ev-types all)
         strng (fn [x y] (str "exogenous event " (event-name (:verb x)) "(" (reduce str (interpose ", " y)) ")" ";"))]
-    (concat (cons header (into [] (set (map (fn [x y] (strng x y)) all types)))) ["exogenous event noDeadline;"])))
+    (concat (cons header (into [] (set (map (fn [x y] (strng x y)) all types)))) ["exogenous event noDeadline(Identity);"])))
     ;; (prn-str types)
   ;; ))
 
@@ -319,7 +320,7 @@ or STRING to string"
   (let [header (str "\n% VIOLATION EVENTS: " (namify (:label trope)) " ----------")
         viols (filter :obligation (:events trope))
         strng (fn [x] (str "violation event " (viol-name x)";"))]
-    (concat (cons header (into [] (set (map strng viols)))) ["violation event noViolation;"])))
+    (concat (cons header (into [] (set (map strng viols)))) ["violation event noViolation(Identity);"])))
 
 (defn get-param-obls [trope]
   (let [
@@ -384,7 +385,7 @@ or STRING to string"
 (defn obl-events [trope]
   (let [header (str "\n% OBLIGATION FLUENTS: " (namify (:label trope)) " ----------")
         obls (get-param-obls trope)
-        p (println (reduce str (:evs obls)))
+        ;; p (println (reduce str (:evs obls)))
         strng (fn [x] (str "obligation fluent " (reduce str x)))]
     (if-not (empty? (reduce str (:evs obls)))
       (cons header (into [] (map strng (:evs obls))))
@@ -542,7 +543,8 @@ or STRING to string"
         rolestrs (map #(fluentfn % "role") roles)
         placestrs (map #(fluentfn % "place") places)
         objstrs (map #(fluentfn % "object") objects)
-        phasefn (fn [x] (str "phase(" x ", " INACTIVE ")"))
+        ;; phasefn (fn [x] (str "phase(" x ", " INACTIVE ")"))
+        phasefn (fn [x] (str "phase(" x ", " (str "phase" (first PHASES))  ")"))
         phases (map #(event-name (:label %)) (:tropes hmap))
         phasestrs (map phasefn phases)
         powifs (fn [letters] (reduce str (flatten (interpose ", " (map (partial interpose " != ") (partition 2 1 letters))))))
@@ -636,6 +638,7 @@ or STRING to string"
         term-a (map tmake (repeat inst) (cons [(first phases)] (conj (into [] (map vector (rest phases) norms)) [(last phases)])) tvec)
         ]
     (concat [header] init-a init-s init-v ["\n"] [term-header] term-a term-o ["\n"])
+    ;; (concat [header] init-a init-s init-v ["\n"])
     ))
 
 
