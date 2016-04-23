@@ -20,7 +20,7 @@
   (POST "/stories/delete/:id" [id] (delete-story id))
   (GET "/characters/" [] (get-characters))
   ;; (GET "/characters/:role/" [role] (get-characters-by-role role))
-  (POST "/characters/new/" [data] (new-character data))
+  (POST "/characters/new/" [& data] (response (new-character data)))
   (POST "/characters/edit/:id" [id data] (edit-character id data))
   (POST "/characters/delete/:id" [id] (delete-character id))
   (GET "/objects/" [] (get-objects))

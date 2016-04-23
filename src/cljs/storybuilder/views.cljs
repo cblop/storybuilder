@@ -454,10 +454,10 @@
         obls (map #(map :obl %) (map :obls text-list))
         cgroups (map (fn [x] (group-by #(first (:params %)) x)) perms)
         cogroups (map (fn [x] (group-by #(first (:params %)) x)) obls)
-        pstr-f (fn [x] (for [k (keys x)] (str (embellish k) " may: " (reduce str (interpose ", " (map #(str (:perm %) " " (reduce str (rest (:params %)))) (get x k)))))))
+        pstr-f (fn [x] (for [k (keys x)] (str (embellish k) " may: " (reduce str (interpose ", " (map #(str (:perm %) " " (reduce str (map embellish (rest (:params %))))) (get x k)))))))
         ;; o-str (fn [{:keys [event params deadline viol]}]
         ;;         (str (embellish (first params)) " must: " event (reduce str (rest params))))
-        ostr-f (fn [x] (for [k (keys x)] (str (embellish k) " must: " (reduce str (interpose ", " (map #(str (:event %) " " (reduce str (rest (:params %)))) (get x k)))))))
+        ostr-f (fn [x] (for [k (keys x)] (str (embellish k) " must: " (reduce str (interpose ", " (map #(str (:event %) " " (reduce str (map embellish (rest (:params %))))) (get x k)))))))
         c-perms (map pstr-f cgroups)
         c-obls (map ostr-f cogroups)
         p-strs (map #(interpose "; \n" %) c-perms)
@@ -530,6 +530,7 @@
   (let [verbs (re-frame/subscribe [:story-verbs])
         verb (re-frame/subscribe [:story-verb])
         object-as (re-frame/subscribe [:story-objectas])
+        nice-as (map #(assoc % :label (embellish (:label %))) @object-as)
         object-a (re-frame/subscribe [:story-object-a])
         object-b (re-frame/subscribe [:story-object-b])]
     [com/h-box
@@ -546,7 +547,7 @@
                 [com/single-dropdown
                  :width "250px"
                  :placeholder "<object>"
-                 :choices @object-as
+                 :choices nice-as
                  :model @object-a
                  :on-change #(re-frame/dispatch [:update-story-object-a %])]
                 gap

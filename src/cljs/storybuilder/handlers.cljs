@@ -1,12 +1,13 @@
 (ns storybuilder.handlers
-    (:require [re-frame.core :as re-frame]
-              [ajax.core :refer [GET POST]]
-              [storybuilder.db :as db]
-              [storybuilder.parser :refer [parse-trope]]
-              [storybuilder.output-parser :refer [trace-to-options]]
-              [instaparse.core :as insta]
-              [storybuilder.gen :refer [make-map]]
-              ))
+  (:require [re-frame.core :as re-frame]
+            [ajax.core :refer [GET POST]]
+            [cljsjs.chance]
+            [storybuilder.db :as db]
+            [storybuilder.parser :refer [parse-trope]]
+            [storybuilder.output-parser :refer [trace-to-options]]
+            [instaparse.core :as insta]
+            [storybuilder.gen :refer [make-map]]
+            [clojure.string :as str]))
 
 (def host "http://localhost:3449")
 
@@ -175,17 +176,27 @@
    (let [a (:our-tropes db)]
      (assoc db :our-tropes (drop-nth n a)))))
 
+(defn slugify [n]
+  (-> n
+      (.toLowerCase)
+      (str/replace #"\s" "-")))
+
 (defn random-character [role]
-  (do
-    {:id :random-char :label "Random Character" :role role}))
+  (let [chance (js/Chance.)
+        cname (str (.first chance) " " (.last chance))]
+      {:id (slugify cname) :random true :label cname :role role}))
 
 (defn random-object [type]
   (do
-    {:id :random-obj :label "Random Object" :type type}))
+    (let [chance (js/Chance.)
+          oname (.word chance)]
+      {:id (slugify oname) :random true :label oname :type type})))
 
 (defn random-place [loc]
   (do
-    {:id :random-place :label "Random Place" :location loc}))
+    (let [chance (js/Chance.)
+          pname (.city chance)]
+      {:id (slugify pname) :random true :label pname :location loc})))
 
 (re-frame/register-handler
  :change-trope

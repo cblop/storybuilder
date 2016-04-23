@@ -7,6 +7,7 @@
                  [cljs-ajax "0.5.4"]
                  [eigenhombre/namejen "0.1.12"]
                  [cljsjs/codemirror "5.11.0-1"]
+                 [cljsjs/chance "0.7.3-0"]
                  [compojure "1.5.0"]
                  [com.novemberain/monger "3.0.2"]
                  [me.raynes/conch "0.8.0"]

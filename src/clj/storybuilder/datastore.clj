@@ -86,7 +86,10 @@
 ;;   (map stringify-ids (mc/find-maps db "characters" {:roles role})))
 
 (defn new-character [data]
-  (mc/insert db "characters" (merge {:_id (ObjectId.)} data)))
+  (let [id (ObjectId.)]
+    (do
+      (mc/insert db "characters" (merge {:_id id} data))
+      )))
 
 (defn delete-character [id]
   (mc/remove-by-id db "characters" id))

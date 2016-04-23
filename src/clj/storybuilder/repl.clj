@@ -24,6 +24,9 @@
 (new-character {:label "Darth Vader"
                 :roles ["Villain"]})
 
+(new-character {:label "Obi Wan"
+                :roles ["Dispatcher"]})
+
 (get-characters)
 
 (reset-collection! "characters")
