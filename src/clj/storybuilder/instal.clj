@@ -523,16 +523,17 @@ or STRING to string"
   (let [
         header "\n% INITIALLY: -----------"
         params (apply merge (map get-all-params (:tropes hmap)))
+        param-map (map get-all-params (:tropes hmap))
         obls (map get-obls (:tropes hmap))
         story (:story hmap)
         instances (:instances story)
-        role-list (map first (:roles params))
-        place-list (map first (:places params))
-        obj-list (map first (:objects params))
+        role-list (mapcat #(map first (:roles %)) param-map)
+        place-list (mapcat #(map first (:places %)) param-map)
+        obj-list (mapcat #(map first (:objects %)) param-map)
         first-events (map first (map :events (:tropes hmap)))
         ;; first-perms (map :perm (filter :perm first-events))
         ;; fperm-strs (map #(perm (event-str % params)) first-perms)
-        fperm-strs (map #(str (norm-str % params) " if " (reduce str (interpose ", " (param-str % params)))) first-events)
+        fperm-strs (map #(str (norm-str %1 %2) " if " (reduce str (interpose ", " (param-str %1 %2)))) first-events param-map)
         ;; fperm-cnds (map #(param-str % params) first-events)
         fperms fperm-strs
         ;event-name?
@@ -564,6 +565,7 @@ or STRING to string"
         powers (map powfn (:tropes hmap))
 
         first-perms (reduce str (map #(str "initially\n    " (reduce str %) ";\n") fperms))
+        ;; first-perms ""
 
         powstrs (reduce str (map #(str "initially\n    " (reduce str %) ";\n") powers))
         ;; powstrs ""
