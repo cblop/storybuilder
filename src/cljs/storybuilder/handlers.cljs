@@ -422,8 +422,10 @@
 (re-frame/register-handler
  :story-event-handler
  (fn [db [_ response]]
-   (let [options (trace-to-options (:text response))]
-     (assoc (assoc db :story-text (conj (vec (:story-text db)) options)) :story-perms (:perms options)))))
+   (let [options (trace-to-options (:text response))
+         obls (map :obl (:obls options))]
+         (assoc (assoc (assoc db :story-text (conj (vec (:story-text db)) options)) :story-perms (:perms options)) :story-obls obls))))
+
 
 (re-frame/register-handler
  :story-event

@@ -192,17 +192,20 @@
      (reaction (:story-text @db)))))
 
 (defn make-dropdowns [things]
-  (map #(hash-map :id (:perm %) :label (:perm %)) things))
+  (map #(if (:perm %)
+          (hash-map :id (:perm %) :label (:perm %))
+          (hash-map :id (:event %) :label (:event %))
+          ) things))
 
 (re-frame/register-sub
  :story-verbs
  (fn [db _]
-   (reaction (make-dropdowns (:story-perms @db)))))
+   (reaction (make-dropdowns (concat (:story-perms @db) (:story-obls @db))))))
 
 (re-frame/register-sub
  :story-objectas
  (fn [db _]
-   (let [perms (filter #(= (:perm %) (:story-verb @db)) (:story-perms @db))
+   (let [perms (filter #(or (= (:event %) (:story-verb @db)) (= (:perm %) (:story-verb @db))) (concat (:story-obls @db) (:story-perms @db)))
          params (map #(second (:params %)) perms)
          dmap (map #(hash-map :id % :label %) params)]
      (println "OBJECTAS:")
