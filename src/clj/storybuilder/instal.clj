@@ -136,15 +136,15 @@ or STRING to string"
                     ;; (reduce str (param-str params))
                     ))
         dead (if (nil? deadline) "noDeadline(Identity)"
-                 (->> deadline
-                     (ev-types)
-                     (interpose ", ")
-                     (reduce str)
-                     ;; (reduce str (param-str params))
-                     ))
+                 (str (:verb deadline) "(" (->> deadline
+                                                (ev-types)
+                                                (interpose ", ")
+                                                (reduce str)
+                                                ;; (reduce str (param-str params))
+                                                ) ")"))
         viol (if (nil? violation) "noViolation(Identity)"
                  (viol-name {:obligation obligation}))]
-    (str "obl(" (:verb obligation) "(" obl "), " (:verb deadline)  dead ", " viol ");")))
+    (str "obl(" (:verb obligation) "(" obl "), " dead ", " viol ");")))
 
 (defn obl [{:keys [obligation]} params]
   (let [deadline (:deadline obligation)
