@@ -646,11 +646,14 @@ or STRING to string"
 
 (defn instal [hmap]
   (let [;; initiallys [(str "initially\n    " (reduce str (interpose ",\n    " (mapcat #(initially % story) (:tropes hmap)))) ";")]
+        p (println "initially")
         initiallys (initially hmap)
         ;; inst-name [(str "institution " (event-name (:storyname (:story hmap))) ";")]
         inst-name [(str "institution " "story" ";")]
         create ["% CREATION EVENT -----------" "create event startShow;\n"]
+        p (println "exts")
         exts (mapcat external-events (:tropes hmap))
+        p (println "insts")
         insts (mapcat inst-events (:tropes hmap))
         obls (mapcat obl-events (:tropes hmap))
         inits (mapcat #(initiates %) (:tropes hmap))

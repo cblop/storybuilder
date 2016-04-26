@@ -50,6 +50,7 @@
     :visit (fn [& args] (hash-map :verb (first args) :place (:object (second args))))
     :give (fn [& args] (let [chars (get-by-key :role args)] {:verb "give" :from (first chars) :to (second chars) :object (first (get-by-key :object args))}))
     :meet (fn [& args] (let [chars (get-by-key :role args)] {:verb "meet" :role-a (first chars) :role-b (second chars)}))
+    :kill (fn [& args] (let [chars (get-by-key :role args)] {:verb "kill" :role-a (first chars) :role-b (second chars)}))
     :task (partial merge)
     :norms (fn [& args] args)
     :obligation (fn [& args] {:obligation (apply merge args)})

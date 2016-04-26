@@ -42,7 +42,7 @@
     move = mverb <' '> <'to '?> place
     mverb = 'go' / 'goes' / 'leave' / 'leaves' / 'return' / 'returns' / 'at' / 'come' / 'comes'
     verb = word
-    place = word
+    place = name
 
 
     permission = character <' may '> (move / task) conditional? <'\\n'?>
@@ -63,8 +63,10 @@
 
     <whitespace> = #'\\s\\s'
 
-    <name> = (<'The ' | 'the '>)? word
+    <name> = (<'The ' | 'the '>)? cword
     <words> = word (<' '> word)*
+    <cwords> = cword (<' '> cword)*
+    <cword> = #'[A-Z][0-9a-zA-Z\\-\\_\\']*'
     <word> = #'[0-9a-zA-Z\\-\\_\\']*'"
    ))
 
