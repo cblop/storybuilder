@@ -197,15 +197,29 @@
           (hash-map :id (:event %) :label (:event %))
           ) things))
 
+(defn embellish [word]
+  (->> word
+       (split-with #(not (= (first %) (.toUpperCase (first %)))))
+       (map #(clojure.string/capitalize (apply str %)))
+       (interpose " ")
+       (reduce str)
+       (clojure.string/trim)))
+
+
+(defn filter-char [perms]
+  (let [char (re-frame/subscribe [:player])
+        charname (re-frame/subscribe [:charname-for-id @char])]
+    (filter #(= (embellish (first (:params %))) @charname) perms)))
+
 (re-frame/register-sub
  :story-verbs
  (fn [db _]
-   (reaction (make-dropdowns (concat (:story-perms @db) (:story-obls @db))))))
+   (reaction (make-dropdowns (filter-char (concat (:story-perms @db) (:story-obls @db)))))))
 
 (re-frame/register-sub
  :story-objectas
  (fn [db _]
-   (let [perms (filter #(or (= (:event %) (:story-verb @db)) (= (:perm %) (:story-verb @db))) (concat (:story-obls @db) (:story-perms @db)))
+   (let [perms (filter #(or (= (:event %) (:story-verb @db)) (= (:perm %) (:story-verb @db))) (filter-char (concat (:story-obls @db) (:story-perms @db))))
          params (map #(second (:params %)) perms)
          dmap (map #(hash-map :id % :label %) params)]
      (println "OBJECTAS:")
