@@ -18,6 +18,14 @@
 (defn stringer [item]
   (reduce str (interpose " " (map #(if (nil? %) "random" (event-name %)) item))))
 
+
+;; {:tropes [{:label ""}]
+;;  :characters [{:label ""
+;;                :role ""}]
+;;  :places [{:label ""
+;;            :location ""}]
+;;  :objects [{:label ""
+;;             :type ""}]}
 (defn make-domain [hmap id]
   (let [tropes (:tropes hmap)
         p (println "TROPES:")
