@@ -1,5 +1,5 @@
 (ns storybuilder.datastore
-  (:require [storybuilder.solver :refer [make-story solve-story]]
+  (:require [tropic.solver :refer [make-story solve-story]]
             [monger.core :as mg]
             [monger.result :refer [acknowledged?]]
             [monger.collection :as mc])

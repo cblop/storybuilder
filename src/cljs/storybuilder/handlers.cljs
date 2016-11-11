@@ -4,7 +4,7 @@
             [cljsjs.chance]
             [storybuilder.db :as db]
             [storybuilder.parser :refer [parse-trope]]
-            [storybuilder.output-parser :refer [trace-to-options]]
+            ;; [storybuilder.output-parser :refer [trace-to-options]]
             [instaparse.core :as insta]
             [storybuilder.gen :refer [make-map]]
             [clojure.string :as str]))

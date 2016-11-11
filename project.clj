@@ -13,6 +13,7 @@
                  [me.raynes/conch "0.8.0"]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]
+                 [tropic "0.1.0-SNAPSHOT"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.1"]
                  [ring "1.4.0"]]
 
