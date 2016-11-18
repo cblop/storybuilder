@@ -1,6 +1,11 @@
 (ns storybuilder.repl
-  (:require [storybuilder.datastore :refer :all]))
+  (:require [storybuilder.datastore :refer :all]
+            [tropic.solver :refer [make-story solve-story]]))
 
+
+(new-event {:player "Luke Skywalker"
+            :verb "go"
+            :object-a "Tatooine"})
 (do
 
   (new-trope {:label "The Hero's Journey"
@@ -22,10 +27,7 @@
               :objects ["Weapon"]})
   )
 
-(get-tropes)
-
 (reset-collection! "tropes")
-
 
 (do
  (new-character {:label "Luke Skywalker"

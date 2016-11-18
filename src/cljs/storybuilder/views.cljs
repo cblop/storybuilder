@@ -1,7 +1,13 @@
 (ns storybuilder.views
     (:require [re-frame.core :as re-frame]
               [reagent.core :as reagent]
-              [re-com.core :as com]))
+              [re-com.core :as com]
+              [strokes :refer d3]
+              ;; [cljsjs.d3]
+              ))
+
+
+(strokes/bootstrap)
 
 
 ;; GENERAL

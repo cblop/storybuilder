@@ -17,6 +17,28 @@
 (defn stringify-ids [record]
   (dissoc (assoc record :id (str (:_id record))) :_id))
 
+;; EVENTS
+
+(defn get-events []
+  (map stringify-ids (mc/find-maps db "events")))
+
+(defn get-event-by-id [trp]
+  (let [oid (ObjectId. (:id trp))]
+    (stringify-ids (mc/find-one-as-map db "events" {:_id oid}))))
+
+(defn new-event [data]
+  (str (acknowledged? (mc/insert db "events" (merge {:_id (ObjectId.)} (dissoc data :id))))))
+
+(defn delete-event [id]
+  (let [new-id (ObjectId. (str id))]
+    (str (acknowledged? (mc/remove-by-id db "events" new-id)))))
+
+(defn edit-event [data]
+  (let [p (println data)
+        new-id (ObjectId. (str (:id data)))]
+    (str (acknowledged? (mc/update-by-id db "events" new-id (assoc (dissoc data :id) :_id new-id))))))
+
+
 ;; TROPES
 
 (defn get-tropes []
@@ -52,6 +74,7 @@
     (do
       (mc/insert db "stories" (merge {:_id id} data))
       ;; (make-story (assoc data :tropes (map get-trope-by-id (:tropes data))))
+      (println "NEW STORY")
       (make-story data (str id))
       ;; {:id (str id) :text "Testing..."}
       )))
@@ -62,8 +85,12 @@
         event (assoc data :player (:label player))
         ;; story (get-story id)
         ]
-    (solve-story id event)
-    ))
+    (do
+      (new-event data)
+      (println "UPDATE STORY:")
+      (println (solve-story id (get-tropes) (get-events)))
+      (solve-story id (get-tropes) (get-events))))
+    )
 
 (defn delete-story [id]
   (mc/remove-by-id db "stories" id))
