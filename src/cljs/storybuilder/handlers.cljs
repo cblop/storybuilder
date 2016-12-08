@@ -48,7 +48,9 @@
    (println "RESPONSE:")
    (println response)
    (re-frame/dispatch [:story-event])
-   (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))))
+   ;; (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))
+   (assoc (assoc db :story-id (:id response)) :story-sets (:sets response))
+   ))
 
 (re-frame/register-handler
  :success
@@ -429,14 +431,14 @@
  (fn [db [_ object]]
    (assoc db :story-object-a object)))
 
-
 (re-frame/register-handler
  :story-event-handler
  (fn [db [_ response]]
-   (println (trace-to-options (:text response)))
-   (let [options (trace-to-options (:text response))
-         obls (map :obl (:obls options))]
-         (assoc (assoc (assoc db :story-text (conj (vec (:story-text db)) options)) :story-perms (:perms options)) :story-obls obls))))
+   ;; (println (trace-to-options (:text response)))
+   (do
+     (println (:sets response))
+     (assoc db :story-sets (:sets response))
+     )))
 
 
 (re-frame/register-handler

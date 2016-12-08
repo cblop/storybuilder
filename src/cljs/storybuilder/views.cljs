@@ -2,12 +2,11 @@
     (:require [re-frame.core :as re-frame]
               [reagent.core :as reagent]
               [re-com.core :as com]
-              [strokes :refer d3]
-              ;; [cljsjs.d3]
+              [cljsjs.d3]
               ))
 
 
-(strokes/bootstrap)
+;; (strokes/bootstrap)
 
 
 ;; GENERAL
@@ -441,9 +440,169 @@
       (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
       [trope-content])))
 
+;; FORCE-DIRECTED GRAPH ---------------------------------------------
+
+(defn- build-force-layout [width height]
+  (.. js/d3
+      -layout
+      force
+      (charge -940)
+      (linkDistance 240)
+      (size (array width height))))
+
+(defn- setup-force-layout [force-layout graph]
+  (.. force-layout
+      (nodes (.-nodes graph))
+      (links (.-links graph))
+      start))
+
+(defn- build-svg [width height]
+  (.. js/d3
+      (select ".app")
+      (append "svg")
+      (attr "width" width)
+      (attr "height" height)))
+
+(defn- build-links [svg force]
+  (let []
+    (.. svg
+        (selectAll ".link")
+        (data (.links force))
+        enter
+        (append "line")
+        (attr "class" "link")
+        (attr "stroke" "grey")
+        (style "stroke-width" 1)
+        )))
+
+
+;; (defn- label-nodes [svg graph]
+;;   (.. (.selectAll svg ".node")
+;;       (data (.-nodes graph))
+;;       enter
+;;       (append "text")
+;;       (attr "cx" 12)
+;;       (attr "cy" ".35em")
+;;       (text #(.-name %)))
+;;   )
+
+
+(defn build-node-labels [svg graph]
+  (.. svg
+      (selectAll ".node-label")
+      (data (.-nodes graph))
+      enter
+      (append "text")
+      (attr "cx" 12)
+      (attr "cy" ".35em")
+      (text #(.-name %))))
+
+(defn build-link-labels [svg force]
+  (.. svg
+      (selectAll ".link-label")
+      (data (.links force))
+      enter
+      (append "text")
+      (attr "x" (fn [d]
+                  (let [tx (.-x (.-target d))
+                        sx (.-x (.-source d))]
+                    (if (> tx sx)
+                      (+ sx (/ (- tx sx) 2))
+                      (+ tx (/ (- sx tx) 2))
+                        ))))
+      (attr "y" (fn [d]
+                  (let [ty (.-y (.-target d))
+                        sy (.-y (.-source d))]
+                    (if (> ty sy)
+                      (+ sy (/ (- ty sy) 2))
+                      (+ ty (/ (- sy ty) 2))
+                      ))))
+      (text #(.-name %))))
+
+
+(defn- click [d]
+  (js/alert (str "hello" (prn-str d))))
+
+
+(defn- build-nodes [svg graph force-layout]
+  (let [node (.. (.selectAll svg ".node")
+                 (data (.-nodes graph))
+                 enter
+                 (append "g")
+                 (attr "class" "node")
+                 (append "circle")
+                 (attr "r" 25)
+                 (attr "stroke" "black")
+                 (attr "fill" (fn [d] (if (= 0 (.-index d)) "pink" "yellow")))
+                 (on "click" click)
+                 (on "mouseover" (fn [d] (this-as x (.style (.select js/d3 x) (clj->js {:stroke "red" :stroke-width 5})))))
+                 (on "mouseout" (fn [d] (this-as x (.style (.select js/d3 x) (clj->js {:stroke "black" :stroke-width 1})))))
+                 )
+        ]
+    node
+    ;; (.. node
+    ;;         (append "text")
+    ;;         (attr "cx" 12)
+    ;;         (attr "cy" ".35em")
+    ;;         (text #(.-name %)
+    ;;     )
+    ;; (.. node
+    ;;     (append "text")
+    ;;     (attr "cx" 12)
+    ;;     (attr "cy" ".35em")
+    ;;     (text #(.-name %))
+    ;;     )
+    )
+  ;;     ;;     ;; (call (.-drag force-layout))
+      ;;     ))
+        )
+
+
+(defn on-tick [link node node-label link-label]
+  (fn []
+    (.. link
+        (attr "x1" #(.. % -source -x))
+        (attr "y1" #(.. % -source -y))
+        (attr "x2" #(.. % -target -x))
+        (attr "y2" #(.. % -target -y)))
+    (.. link-label
+        (attr "x" (fn [d] (/ (+ (.-x (.-target d)) (.-x (.-source d))) 2)))
+        (attr "y" (fn [d] (/ (+ (.-y (.-target d)) (.-y (.-source d))) 2)))
+        )
+    (.. node
+        (attr "transform" #(str "translate(" (.. % -x) "," (.. % -y) ")")))
+    (.. node-label
+        (attr "transform" #(str "translate(" (.. % -x) "," (.. % -y) ")")))
+    ))
 
 
 ;; STORY
+(defn d3-inner [data]
+  (reagent/create-class
+   {:reagent-render (fn [] [:div [:svg {:width 600 :height 400}]])
+    :component-did-mount (fn []
+                           (let [graph (clj->js data)
+                                 svg (.select js/d3 "svg")
+                                 force-layout (build-force-layout 600 400)
+                                 l (setup-force-layout force-layout graph)
+                                 links (build-links svg force-layout)
+                                 nodes (build-nodes svg graph force-layout)
+                                 node-labels (build-node-labels svg graph)
+                                 link-labels (build-link-labels svg force-layout)
+                                 ]
+                             (.on force-layout "tick"
+                                  (on-tick links nodes node-labels link-labels))
+                             ))
+    :component-did-update (fn [this]
+                            (let [[_ data] (reagent/argv this)
+                                  graph (clj->js data)
+                                  svg (.select js/d3 "svg")
+                                  links (.selectAll svg ".link")
+                                  nodes (.selectAll svg ".node")]
+                              ))
+    ;; :display-name "d3-inner"
+    }
+   ))
 
 
 (defn embellish [word]
@@ -565,47 +724,71 @@
      ]))
 
 (defn play-tab []
-  (let [story-text (re-frame/subscribe [:story-text])]
+  (let [story-text (re-frame/subscribe [:story-text])
+        ;; story-graph (re-frame/subscribe [:story-graph])
+        ]
     [com/v-box
      :children
      [
-      (if (empty? @story-text)
-        [com/h-box
-         :justify :center
-         :padding "40px 60px"
-         :children [
-                    [com/v-box
-                     :children [
-                                [player-select]
-                                gap
-                                [com/h-box
-                                 :justify :center
-                                 :children [
-                                            [go-button]]]]]]]
-        [com/v-box
-         :children [
-                    [com/h-box
-                     :padding "20px 0px 0px 210px"
-                     :children [
-                                [com/label
-                                 :label "What next?"
-                                 :style {:font-size "small"}]]]
-                    spacer
-                    [action-boxes]
-                    [com/h-box
-                     :justify :center
-                     :padding "40px 60px"
-                     :children [
-                                [output]]]
-                    ]]
-        )
-      ;; [com/h-box
-      ;;  :justify :center
-      ;;  :children [[:span {:style {:font-weight "bold" :font-size "22px"}} ">"]
-      ;;             spacer
-      ;;             [prompt]
-      ;;             gap
-      ;;             [go-button]]]
+      ;; [d3-inner @story-graph]
+      [com/h-box
+       :justify :center
+       :children [
+                  ;; [d3-inner [{:cx 100 :cy 100 :r 100 :fill "red"}]]]
+                  ;; [d3-inner {:nodes [
+                  ;;                    {:name "Now" :index 0}
+                  ;;                    {:name "Land of Glory" :index 1}
+                  ;;                    {:name "3" :index 2}
+                  ;;                    {:name "4" :index 3}]
+                  ;;            :links [
+                  ;;                    {:source 0 :target 1 :name "link1"}
+                  ;;                    {:source 0 :target 2 :name "link2"}
+                  ;;                    {:source 1 :target 3 :name "link3"}
+                  ;;                    {:source 3 :target 2 :name "link4"}
+                  ;;                    ]}]]
+
+                  [d3-inner {:nodes [
+                                     {:name "Now" :index 0 :fixed true :x 300 :y 50}
+                                     {:name "Land of Glory" :index 1}
+                                     {:name "3" :index 2}
+                                     {:name "4" :index 3}]
+                             :links [
+                                     {:source 0 :target 1 :name "Hero's Journey"}
+                                     {:source 0 :target 2 :name "Hero's Journey"}
+                                     {:source 1 :target 3 :name "Evil Empire"}
+                                     {:source 3 :target 2 :name "Evil Empire"}
+                                     ]}]]
+       ]
+      ;; (if (empty? @story-text)
+      ;;   [com/h-box
+      ;;    :justify :center
+      ;;    :padding "40px 60px"
+      ;;    :children [
+      ;;               [com/v-box
+      ;;                :children [
+      ;;                           [player-select]
+      ;;                           gap
+      ;;                           [com/h-box
+      ;;                            :justify :center
+      ;;                            :children [
+      ;;                                       [go-button]]]]]]]
+      ;;   [com/v-box
+      ;;    :children [
+      ;;               [com/h-box
+      ;;                :padding "20px 0px 0px 210px"
+      ;;                :children [
+      ;;                           [com/label
+      ;;                            :label "What next?"
+      ;;                            :style {:font-size "small"}]]]
+      ;;               spacer
+      ;;               [action-boxes]
+      ;;               [com/h-box
+      ;;                :justify :center
+      ;;                :padding "40px 60px"
+      ;;                :children [
+      ;;                           [output]]]
+      ;;               ]]
+      ;;   )
       ]]))
 
 
@@ -637,6 +820,7 @@
                  ]
                 )
     )
+
 
 (defn main-panel []
   (fn []

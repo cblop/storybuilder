@@ -13,9 +13,8 @@
                  [me.raynes/conch "0.8.0"]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]
-                 [tropic "0.2.3"]
-                 [net.drib/strokes "0.5.1"]
-                 ;; [cljsjs/d3 "4.3.0-1"]
+                 [tropic "0.3.2"]
+                 [cljsjs/d3 "3.5.16-0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.1"]
                  [ring "1.4.0"]]
 
@@ -36,6 +35,7 @@
                         :figwheel {:on-jsload "storybuilder.core/mount-root"}
                         :compiler {:main storybuilder.core
                                    :output-to "resources/public/js/compiled/app.js"
+                                   :externs ["resources/public/js/cytoscape.min.js"]
                                    :output-dir "resources/public/js/compiled/out"
                                    :asset-path "js/compiled/out"
                                    :source-map-timestamp true}}
@@ -44,6 +44,7 @@
                         :source-paths ["src/cljs"]
                         :compiler {:main storybuilder.core
                                    :output-to "resources/public/js/compiled/app.js"
+                                   :externs ["resources/public/js/cytoscape.min.js"]
                                    :optimizations :advanced
                                    :closure-defines {goog.DEBUG false}
                                    :pretty-print false}}]})

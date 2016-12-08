@@ -25,6 +25,15 @@
  (fn [db _]
    (reaction (:edit-facet @db))))
 
+(re-frame/register-sub
+ :graph
+ (fn [db _]
+   (reaction (:graph @db))))
+
+(re-frame/register-sub
+ :svg
+ (fn [db _]
+   (reaction (:svg @db))))
 
 (re-frame/register-sub
  :story-verb
