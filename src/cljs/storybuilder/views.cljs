@@ -2,7 +2,7 @@
     (:require [re-frame.core :as re-frame]
               [reagent.core :as reagent]
               [re-com.core :as com]
-              [cljsjs.d3]
+              [cljsjs.vis]
               ))
 
 
@@ -442,167 +442,16 @@
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 
-(defn- build-force-layout [width height]
-  (.. js/d3
-      -layout
-      force
-      (charge -940)
-      (linkDistance 240)
-      (size (array width height))))
-
-(defn- setup-force-layout [force-layout graph]
-  (.. force-layout
-      (nodes (.-nodes graph))
-      (links (.-links graph))
-      start))
-
-(defn- build-svg [width height]
-  (.. js/d3
-      (select ".app")
-      (append "svg")
-      (attr "width" width)
-      (attr "height" height)))
-
-(defn- build-links [svg force]
-  (let []
-    (.. svg
-        (selectAll ".link")
-        (data (.links force))
-        enter
-        (append "line")
-        (attr "class" "link")
-        (attr "stroke" "grey")
-        (style "stroke-width" 1)
-        )))
-
-
-;; (defn- label-nodes [svg graph]
-;;   (.. (.selectAll svg ".node")
-;;       (data (.-nodes graph))
-;;       enter
-;;       (append "text")
-;;       (attr "cx" 12)
-;;       (attr "cy" ".35em")
-;;       (text #(.-name %)))
-;;   )
-
-
-(defn build-node-labels [svg graph]
-  (.. svg
-      (selectAll ".node-label")
-      (data (.-nodes graph))
-      enter
-      (append "text")
-      (attr "cx" 12)
-      (attr "cy" ".35em")
-      (text #(.-name %))))
-
-(defn build-link-labels [svg force]
-  (.. svg
-      (selectAll ".link-label")
-      (data (.links force))
-      enter
-      (append "text")
-      (attr "x" (fn [d]
-                  (let [tx (.-x (.-target d))
-                        sx (.-x (.-source d))]
-                    (if (> tx sx)
-                      (+ sx (/ (- tx sx) 2))
-                      (+ tx (/ (- sx tx) 2))
-                        ))))
-      (attr "y" (fn [d]
-                  (let [ty (.-y (.-target d))
-                        sy (.-y (.-source d))]
-                    (if (> ty sy)
-                      (+ sy (/ (- ty sy) 2))
-                      (+ ty (/ (- sy ty) 2))
-                      ))))
-      (text #(.-name %))))
-
-
-(defn- click [d]
-  (js/alert (str "hello" (prn-str d))))
-
-
-(defn- build-nodes [svg graph force-layout]
-  (let [node (.. (.selectAll svg ".node")
-                 (data (.-nodes graph))
-                 enter
-                 (append "g")
-                 (attr "class" "node")
-                 (append "circle")
-                 (attr "r" 25)
-                 (attr "stroke" "black")
-                 (attr "fill" (fn [d] (if (= 0 (.-index d)) "pink" "yellow")))
-                 (on "click" click)
-                 (on "mouseover" (fn [d] (this-as x (.style (.select js/d3 x) (clj->js {:stroke "red" :stroke-width 5})))))
-                 (on "mouseout" (fn [d] (this-as x (.style (.select js/d3 x) (clj->js {:stroke "black" :stroke-width 1})))))
-                 )
-        ]
-    node
-    ;; (.. node
-    ;;         (append "text")
-    ;;         (attr "cx" 12)
-    ;;         (attr "cy" ".35em")
-    ;;         (text #(.-name %)
-    ;;     )
-    ;; (.. node
-    ;;     (append "text")
-    ;;     (attr "cx" 12)
-    ;;     (attr "cy" ".35em")
-    ;;     (text #(.-name %))
-    ;;     )
-    )
-  ;;     ;;     ;; (call (.-drag force-layout))
-      ;;     ))
-        )
-
-
-(defn on-tick [link node node-label link-label]
-  (fn []
-    (.. link
-        (attr "x1" #(.. % -source -x))
-        (attr "y1" #(.. % -source -y))
-        (attr "x2" #(.. % -target -x))
-        (attr "y2" #(.. % -target -y)))
-    (.. link-label
-        (attr "x" (fn [d] (/ (+ (.-x (.-target d)) (.-x (.-source d))) 2)))
-        (attr "y" (fn [d] (/ (+ (.-y (.-target d)) (.-y (.-source d))) 2)))
-        )
-    (.. node
-        (attr "transform" #(str "translate(" (.. % -x) "," (.. % -y) ")")))
-    (.. node-label
-        (attr "transform" #(str "translate(" (.. % -x) "," (.. % -y) ")")))
-    ))
-
-
-;; STORY
-(defn d3-inner [data]
+(defn vis-inner [data]
   (reagent/create-class
-   {:reagent-render (fn [] [:div [:svg {:width 600 :height 400}]])
+   {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
     :component-did-mount (fn []
-                           (let [graph (clj->js data)
-                                 svg (.select js/d3 "svg")
-                                 force-layout (build-force-layout 600 400)
-                                 l (setup-force-layout force-layout graph)
-                                 links (build-links svg force-layout)
-                                 nodes (build-nodes svg graph force-layout)
-                                 node-labels (build-node-labels svg graph)
-                                 link-labels (build-link-labels svg force-layout)
-                                 ]
-                             (.on force-layout "tick"
-                                  (on-tick links nodes node-labels link-labels))
-                             ))
-    :component-did-update (fn [this]
-                            (let [[_ data] (reagent/argv this)
-                                  graph (clj->js data)
-                                  svg (.select js/d3 "svg")
-                                  links (.selectAll svg ".link")
-                                  nodes (.selectAll svg ".node")]
-                              ))
-    ;; :display-name "d3-inner"
-    }
-   ))
+                           (let [container (.getElementById js/document "graph")
+                                 options {
+                                          :layout {:hierarchical {:direction "LR"}}
+                                          }
+                                 network (js/vis.Network. container (clj->js data) (clj->js options))]))
+    :component-did-update (fn [])}))
 
 
 (defn embellish [word]
@@ -747,16 +596,22 @@
                   ;;                    {:source 3 :target 2 :name "link4"}
                   ;;                    ]}]]
 
-                  [d3-inner {:nodes [
-                                     {:name "Now" :index 0 :fixed true :x 300 :y 50}
-                                     {:name "Land of Glory" :index 1}
-                                     {:name "3" :index 2}
-                                     {:name "4" :index 3}]
-                             :links [
-                                     {:source 0 :target 1 :name "Hero's Journey"}
-                                     {:source 0 :target 2 :name "Hero's Journey"}
-                                     {:source 1 :target 3 :name "Evil Empire"}
-                                     {:source 3 :target 2 :name "Evil Empire"}
+                  [vis-inner {:nodes [
+                                      {:id 0 :label "Now" :fixed true :physics false :x 300 :y 50
+                                       :color {:background "#ffaaaa" :border "#ff0000"} :level 0}
+                                     {:id 1 :label "Land of Glory" :level 1}
+                                     {:id 2 :label "3" :level 1}
+                                      {:id 3 :label "4" :level 1}
+                                      {:id 4 :label "5" :level 2}
+                                      {:id 5 :label "6" :level 2}
+                                      ]
+                             :edges [
+                                     {:from 0 :to 1 :label "Hero's Journey" :font {:align "middle"} :arrows "to"}
+                                     {:from 0 :to 2 :label "Hero's Journey" :font {:align "middle"} :arrows "to"}
+                                     {:from 1 :to 3 :label "Evil Empire" :font {:align "middle"} :arrows "to"}
+                                     {:from 1 :to 4 :label "Evil Empire" :font {:align "middle"} :arrows "to"}
+                                     {:from 3 :to 5 :label "Go" :font {:align "middle"} :arrows "to"}
+                                     {:from 4 :to 6 :label "Go" :font {:align "middle"} :arrows "to"}
                                      ]}]]
        ]
       ;; (if (empty? @story-text)

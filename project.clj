@@ -14,7 +14,7 @@
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]
                  [tropic "0.3.2"]
-                 [cljsjs/d3 "3.5.16-0"]
+                 [cljsjs/vis "4.17.0-0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.1"]
                  [ring "1.4.0"]]
 
