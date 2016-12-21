@@ -440,6 +440,25 @@
       (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
       [trope-content])))
 
+;; move this to handlers.cljs
+;; don't forget: you _could_ have multiple events in each timestep!
+;; my encoding here is a _little_ fragile (based on decimal numbers)!
+(defn data->graph [data]
+  (loop [answer-sets data as-num 1 nodes [{:id 0 :label "now" :level 0 :color "#FF3333"}] edges []]
+    (if (empty? answer-sets) {:nodes nodes :edges edges}
+        (let [options
+              (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1]
+                (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
+                    (let [event (first (:observed (first time-step))) ; NOTE: this is just the FIRST event
+                          label (str (:event event) " " (apply str (interpose " " (:params event))))
+                          prev-id (if (= 1 ts-num) 0 (+ (- (* 10 ts-num) 10) as-num))
+                          this-id (+ (* 10 ts-num) as-num)
+                          e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
+                          n (merge {:label label :id this-id :level ts-num} (if (> ts-num 1) {:color "#dddddd" :font {:color "#999999"}} {}))]
+                      (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num)))))]
+          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
+  )
+
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 
 (defn vis-inner [data]
@@ -448,6 +467,7 @@
     :component-did-mount (fn []
                            (let [container (.getElementById js/document "graph")
                                  options {
+                                          :physics {:hierarchicalRepulsion {:springLength 300}}
                                           :layout {:hierarchical {:direction "LR"}}
                                           }
                                  network (js/vis.Network. container (clj->js data) (clj->js options))]))
@@ -575,6 +595,28 @@
 (defn play-tab []
   (let [story-text (re-frame/subscribe [:story-text])
         ;; story-graph (re-frame/subscribe [:story-graph])
+        graph (data->graph [; answer set
+                      [; time step
+                       {:observed [{:event "go"
+                                    :params ["south"]
+                                    :inst "Hero's Journey"}]
+                        :fluents []}
+                       {:observed [{:event "run"
+                                    :params ["away"]
+                                    :inst "Hero's Journey"}]
+                        :fluents []}
+                       ]
+                      [; time step
+                       {:observed [{:event "take"
+                                    :params ["sword"]
+                                    :inst "Hero's Journey"}]
+                        :fluents []}]
+                      [; time step
+                       {:observed [{:event "go"
+                                    :params ["north"]
+                                    :inst "Evil Empire"}]
+                        :fluents []}]
+                      ])
         ]
     [com/v-box
      :children
@@ -596,23 +638,7 @@
                   ;;                    {:source 3 :target 2 :name "link4"}
                   ;;                    ]}]]
 
-                  [vis-inner {:nodes [
-                                      {:id 0 :label "Now" :fixed true :physics false :x 300 :y 50
-                                       :color {:background "#ffaaaa" :border "#ff0000"} :level 0}
-                                     {:id 1 :label "Land of Glory" :level 1}
-                                     {:id 2 :label "3" :level 1}
-                                      {:id 3 :label "4" :level 1}
-                                      {:id 4 :label "5" :level 2}
-                                      {:id 5 :label "6" :level 2}
-                                      ]
-                             :edges [
-                                     {:from 0 :to 1 :label "Hero's Journey" :font {:align "middle"} :arrows "to"}
-                                     {:from 0 :to 2 :label "Hero's Journey" :font {:align "middle"} :arrows "to"}
-                                     {:from 1 :to 3 :label "Evil Empire" :font {:align "middle"} :arrows "to"}
-                                     {:from 1 :to 4 :label "Evil Empire" :font {:align "middle"} :arrows "to"}
-                                     {:from 3 :to 5 :label "Go" :font {:align "middle"} :arrows "to"}
-                                     {:from 4 :to 6 :label "Go" :font {:align "middle"} :arrows "to"}
-                                     ]}]]
+                  [vis-inner graph]]
        ]
       ;; (if (empty? @story-text)
       ;;   [com/h-box

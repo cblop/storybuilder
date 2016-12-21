@@ -182,3 +182,45 @@
 (reset-collection! "objects")
 
 
+
+;; move this to handlers.cljs
+;; don't forget: you _could_ have multiple events in each timestep!
+;; my encoding here is a _little_ fragile (based on decimal numbers)!
+(defn data->graph [data]
+  (loop [answer-sets data as-num 1 nodes [{:id 0 :label "start" :level 0 :color "#FF3333"}] edges []]
+    (if (empty? answer-sets) {:nodes nodes :edges edges}
+        (let [options
+              (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1]
+                (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
+                    (let [event (first (:observed (first time-step))) ; NOTE: this is just the FIRST event
+                          label (str (:event event) " " (apply str (interpose " " (:params event))))
+                          prev-id (if (= 1 ts-num) 0 (+ (- (* 10 ts-num) 10) as-num))
+                          this-id (+ (* 10 ts-num) as-num)
+                          e {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}}
+                          n {:label label :id this-id :level ts-num}]
+                      (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num)))))]
+          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
+  )
+
+(data->graph [; answer set
+              [; time step
+               {:observed [{:event "go"
+                            :params ["south"]
+                            :inst "Hero's Journey"}]
+                :fluents []}
+               {:observed [{:event "run"
+                            :params ["away"]
+                            :inst "Hero's Journey"}]
+                :fluents []}
+               ]
+              [; time step
+               {:observed [{:event "take"
+                            :params ["sword"]
+                            :inst "Hero's Journey"}]
+                :fluents []}]
+              [; time step
+               {:observed [{:event "go"
+                            :params ["north"]
+                            :inst "Evil Empire"}]
+                :fluents []}]
+              ])
