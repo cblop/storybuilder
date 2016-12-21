@@ -440,6 +440,15 @@
       (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
       [trope-content])))
 
+;; again, just the first event
+(defn index->event
+  [events index]
+  (let [dec (- (/ (- index (mod index 10)) 10) 1)
+        rem (- (mod index 10) 1)]
+    (if (zero? index) "You are here."
+        (first (:observed (nth (nth events rem) dec)))))
+  )
+
 ;; move this to handlers.cljs
 ;; don't forget: you _could_ have multiple events in each timestep!
 ;; my encoding here is a _little_ fragile (based on decimal numbers)!
@@ -465,12 +474,15 @@
   (reagent/create-class
    {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
     :component-did-mount (fn []
-                           (let [container (.getElementById js/document "graph")
+                           (let [graph (data->graph data)
+                                 container (.getElementById js/document "graph")
                                  options {
                                           :physics {:hierarchicalRepulsion {:springLength 300}}
                                           :layout {:hierarchical {:direction "LR"}}
                                           }
-                                 network (js/vis.Network. container (clj->js data) (clj->js options))]))
+                                 network (js/vis.Network. container (clj->js graph) (clj->js options))
+                                 ]
+                             (.on network "selectNode" (fn [params] (js/alert (prn-str (index->event data (js/parseInt (first (get (js->clj params) "nodes"))))))))))
     :component-did-update (fn [])}))
 
 
@@ -595,28 +607,28 @@
 (defn play-tab []
   (let [story-text (re-frame/subscribe [:story-text])
         ;; story-graph (re-frame/subscribe [:story-graph])
-        graph (data->graph [; answer set
-                      [; time step
-                       {:observed [{:event "go"
-                                    :params ["south"]
-                                    :inst "Hero's Journey"}]
-                        :fluents []}
-                       {:observed [{:event "run"
-                                    :params ["away"]
-                                    :inst "Hero's Journey"}]
-                        :fluents []}
-                       ]
-                      [; time step
-                       {:observed [{:event "take"
-                                    :params ["sword"]
-                                    :inst "Hero's Journey"}]
-                        :fluents []}]
-                      [; time step
-                       {:observed [{:event "go"
-                                    :params ["north"]
-                                    :inst "Evil Empire"}]
-                        :fluents []}]
-                      ])
+        graph  [; answer set
+                [; time step
+                 {:observed [{:event "go"
+                              :params ["south"]
+                              :inst "Hero's Journey"}]
+                  :fluents []}
+                 {:observed [{:event "run"
+                              :params ["away"]
+                              :inst "Hero's Journey"}]
+                  :fluents []}
+                 ]
+                [; time step
+                 {:observed [{:event "take"
+                              :params ["sword"]
+                              :inst "Hero's Journey"}]
+                  :fluents []}]
+                [; time step
+                 {:observed [{:event "go"
+                              :params ["north"]
+                              :inst "Evil Empire"}]
+                  :fluents []}]
+                ]
         ]
     [com/v-box
      :children
