@@ -194,6 +194,11 @@
    (reaction (:error @db))))
 
 (re-frame/register-sub
+ :story-sets
+ (fn [db _]
+   (reaction (:story-sets @db))))
+
+(re-frame/register-sub
  :story-text
  (fn [db _]
    (do

@@ -47,7 +47,7 @@
  (fn [db [_ response]]
    (println "RESPONSE:")
    (println response)
-   (re-frame/dispatch [:story-event])
+   ;; (re-frame/dispatch [:story-event])
    ;; (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))
    (assoc (assoc db :story-id (:id response)) :story-sets (:sets response))
    ))
@@ -439,6 +439,27 @@
      (println (:sets response))
      (assoc db :story-sets (:sets response))
      )))
+
+(re-frame/register-handler
+ :story-action
+ (fn [db [_ event]]
+   (let [player (re-frame/subscribe [:player])
+         story-id (re-frame/subscribe [:story-id])]
+     (do
+       (println "PLAYER: " @player)
+       (println "EVENT: " event)
+       (POST (str host "/stories/event") {:params
+                                          {:story-id @story-id
+                                           :player @player
+                                           :verb (:event event)
+                                           :object-a (first (:params event))
+                                           :object-b (if (second (:params event)) (second (:params event)) nil)}
+                                          :handler #(re-frame/dispatch [:story-event-handler %1])
+                                          :error-handler #(re-frame/dispatch [:error-handler %1])
+                                          :format :json
+                                          :response-format :json
+                                          :keywords? true})
+       db))))
 
 
 (re-frame/register-handler

@@ -2,6 +2,11 @@
   (:require [storybuilder.datastore :refer :all]
             [tropic.solver :refer [make-story solve-story]]))
 
+(get-events)
+
+
+(reset-collection! "events")
+
 
 (new-event {:player "Luke Skywalker"
             :verb "go"

@@ -22,6 +22,9 @@
 (defn get-events []
   (map stringify-ids (mc/find-maps db "events")))
 
+(defn get-events-fo-story [id]
+  (map stringify-ids (mc/find-maps db "events" {:story-id id})))
+
 (defn get-event-by-id [trp]
   (let [oid (ObjectId. (:id trp))]
     (stringify-ids (mc/find-one-as-map db "events" {:_id oid}))))

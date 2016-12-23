@@ -442,11 +442,12 @@
 
 ;; again, just the first event
 (defn index->event
-  [events index]
-  (let [dec (- (/ (- index (mod index 10)) 10) 1)
+  [index]
+  (let [events (re-frame/subscribe [:story-sets])
+        dec (- (/ (- index (mod index 10)) 10) 1)
         rem (- (mod index 10) 1)]
     (if (zero? index) "You are here."
-        (first (:observed (nth (nth events rem) dec)))))
+        (first (:observed (nth (nth @events rem) dec)))))
   )
 
 ;; move this to handlers.cljs
@@ -471,20 +472,33 @@
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 
-(defn vis-inner [data]
-  (reagent/create-class
-   {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
-    :component-did-mount (fn []
-                           (let [graph (data->graph data)
-                                 container (.getElementById js/document "graph")
-                                 options {
-                                          :physics {:hierarchicalRepulsion {:springLength 300}}
-                                          :layout {:hierarchical {:direction "LR"}}
-                                          }
-                                 network (js/vis.Network. container (clj->js graph) (clj->js options))
-                                 ]
-                             (.on network "selectNode" (fn [params] (js/alert (prn-str (index->event data (js/parseInt (first (get (js->clj params) "nodes"))))))))))
-    :component-did-update (fn [])}))
+(defn vis-inner []
+   (let [visi (atom nil)
+         update (fn [comp]
+                  (let [graph (data->graph (:graph (reagent/props comp)))]
+                    (do
+                      (println (str "COMP: " (:graph (reagent/props comp))))
+                      (.setData (:network @visi) (clj->js graph))
+                      (.redraw (:network @visi))
+                      )))]
+     (reagent/create-class
+      {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
+       :component-did-mount (fn [comp]
+                              (let [
+                                    container (.getElementById js/document "graph")
+                                    options {
+                                             :physics {:hierarchicalRepulsion {:springLength 300}}
+                                             :layout {:hierarchical {:direction "LR"}}
+                                             }
+                                    network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))
+                                    ]
+                                (do
+                                  (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))
+                                  (.on network "selectNode"  #(re-frame/dispatch [:story-action (index->event (js/parseInt (first (get (js->clj %) "nodes"))))]))
+                                  (reset! visi {:network network})))
+                              (update comp))
+       :component-did-update update
+       :display-name "vis-inner"})))
 
 
 (defn embellish [word]
@@ -606,83 +620,90 @@
      ]))
 
 (defn play-tab []
-  (let [story-text (re-frame/subscribe [:story-text])
+  (let [
+        story-graph (re-frame/subscribe [:story-sets])
         ;; story-graph (re-frame/subscribe [:story-graph])
-        graph  [; answer set
-                [; time step
-                 {:observed [{:event "go"
-                              :params ["south"]
-                              :inst "Hero's Journey"}]
-                  :fluents []}
-                 {:observed [{:event "run"
-                              :params ["away"]
-                              :inst "Hero's Journey"}]
-                  :fluents []}
-                 ]
-                [; time step
-                 {:observed [{:event "take"
-                              :params ["sword"]
-                              :inst "Hero's Journey"}]
-                  :fluents []}]
-                [; time step
-                 {:observed [{:event "go"
-                              :params ["north"]
-                              :inst "Evil Empire"}]
-                  :fluents []}]
-                ]
+        ;; graph  [; answer set
+        ;;         [; time step
+        ;;          {:observed [{:event "go"
+        ;;                       :params ["south"]
+        ;;                       :inst "Hero's Journey"}]
+        ;;           :fluents []}
+        ;;          {:observed [{:event "run"
+        ;;                       :params ["away"]
+        ;;                       :inst "Hero's Journey"}]
+        ;;           :fluents []}
+        ;;          ]
+        ;;         [; time step
+        ;;          {:observed [{:event "take"
+        ;;                       :params ["sword"]
+        ;;                       :inst "Hero's Journey"}]
+        ;;           :fluents []}]
+        ;;         [; time step
+        ;;          {:observed [{:event "go"
+        ;;                       :params ["north"]
+        ;;                       :inst "Evil Empire"}]
+        ;;           :fluents []}
+        ;;          {:observed [{:event "kill"
+        ;;                       :params ["hero"]
+        ;;                       :inst "Evil Empire"}]
+        ;;           }
+        ;;          ]
+        ;;         ]
         ]
     [com/v-box
      :children
      [
       ;; [d3-inner @story-graph]
-      [com/h-box
-       :justify :center
-       :children [
-                  ;; [d3-inner [{:cx 100 :cy 100 :r 100 :fill "red"}]]]
-                  ;; [d3-inner {:nodes [
-                  ;;                    {:name "Now" :index 0}
-                  ;;                    {:name "Land of Glory" :index 1}
-                  ;;                    {:name "3" :index 2}
-                  ;;                    {:name "4" :index 3}]
-                  ;;            :links [
-                  ;;                    {:source 0 :target 1 :name "link1"}
-                  ;;                    {:source 0 :target 2 :name "link2"}
-                  ;;                    {:source 1 :target 3 :name "link3"}
-                  ;;                    {:source 3 :target 2 :name "link4"}
-                  ;;                    ]}]]
+      ;; [com/h-box
+      ;;  :justify :center
+      ;;  :children [
+      ;;             ;; [d3-inner [{:cx 100 :cy 100 :r 100 :fill "red"}]]]
+      ;;             ;; [d3-inner {:nodes [
+      ;;             ;;                    {:name "Now" :index 0}
+      ;;             ;;                    {:name "Land of Glory" :index 1}
+      ;;             ;;                    {:name "3" :index 2}
+      ;;             ;;                    {:name "4" :index 3}]
+      ;;             ;;            :links [
+      ;;             ;;                    {:source 0 :target 1 :name "link1"}
+      ;;             ;;                    {:source 0 :target 2 :name "link2"}
+      ;;             ;;                    {:source 1 :target 3 :name "link3"}
+      ;;             ;;                    {:source 3 :target 2 :name "link4"}
+      ;;             ;;                    ]}]]
 
-                  [vis-inner graph]]
-       ]
-      ;; (if (empty? @story-text)
-      ;;   [com/h-box
-      ;;    :justify :center
-      ;;    :padding "40px 60px"
-      ;;    :children [
-      ;;               [com/v-box
-      ;;                :children [
-      ;;                           [player-select]
-      ;;                           gap
-      ;;                           [com/h-box
-      ;;                            :justify :center
-      ;;                            :children [
-      ;;                                       [go-button]]]]]]]
-      ;;   [com/v-box
-      ;;    :children [
-      ;;               [com/h-box
-      ;;                :padding "20px 0px 0px 210px"
-      ;;                :children [
-      ;;                           [com/label
-      ;;                            :label "What next?"
-      ;;                            :style {:font-size "small"}]]]
-      ;;               spacer
-      ;;               [action-boxes]
-      ;;               [com/h-box
-      ;;                :justify :center
-      ;;                :padding "40px 60px"
-      ;;                :children [
-      ;;                           [output]]]
-      ;;               ]]
-      ;;   )
+      ;;             [vis-inner graph]]
+      ;;  ]
+      (if-not @story-graph
+        [com/h-box
+         :justify :center
+         :padding "40px 60px"
+         :children [
+                    [com/v-box
+                     :children [
+                                [player-select]
+                                gap
+                                [com/h-box
+                                 :justify :center
+                                 :children [
+                                            [go-button]]]]]]]
+        [vis-inner {:graph @story-graph}]
+        ;; [com/v-box
+        ;;  :children [
+        ;;             [com/h-box
+        ;;              :padding "20px 0px 0px 210px"
+        ;;              :children [
+        ;;                         [com/label
+        ;;                          :label "What next?"
+        ;;                          :style {:font-size "small"}]]]
+        ;;             spacer
+        ;;             [action-boxes]
+        ;;             [com/h-box
+        ;;              :justify :center
+        ;;              :padding "40px 60px"
+        ;;              :children [
+        ;;                         [output]]]
+        ;;             ]]
+        )
       ]]))
 
 
