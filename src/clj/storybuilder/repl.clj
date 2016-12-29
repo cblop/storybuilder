@@ -2,7 +2,25 @@
   (:require [storybuilder.datastore :refer :all]
             [tropic.solver :refer [make-story solve-story]]))
 
-(get-events)
+(map :story-id (get-events))
+(nth (map :story-id (get-events)) 4)
+(get-events-for-story (nth (map :story-id (get-events)) 4))
+(get-events-for-story (nth (map :story-id (get-events)) 5))
+(get-tropes-for-story (nth (map :story-id (get-events)) 5))
+
+(let [id (last (map :story-id (get-events)))]
+  (solve-story
+   id
+   (get-tropes-for-story id)
+   (get-events-for-story id)))
+
+(count (get-events))
+(count (get-stories))
+(:id (first (get-stories)))
+(get-tropes-for-story "585d003359111a1296f87c88")
+(get-story "585d003359111a1296f87c88")
+(get-story (:id (first (get-stories))))
+(get-tropes-for-story (:id (nth (get-stories) 70)))
 
 
 (reset-collection! "events")

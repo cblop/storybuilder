@@ -22,7 +22,7 @@
 (defn get-events []
   (map stringify-ids (mc/find-maps db "events")))
 
-(defn get-events-fo-story [id]
+(defn get-events-for-story [id]
   (map stringify-ids (mc/find-maps db "events" {:story-id id})))
 
 (defn get-event-by-id [trp]
@@ -47,6 +47,7 @@
 (defn get-tropes []
   (map stringify-ids (mc/find-maps db "tropes")))
 
+
 (defn get-trope-by-id [trp]
   (let [oid (ObjectId. (:id trp))]
     (stringify-ids (mc/find-one-as-map db "tropes" {:_id oid}))))
@@ -69,6 +70,10 @@
 (defn get-stories []
   (map stringify-ids (mc/find-maps db "stories")))
 
+(defn get-tropes-for-story [id]
+  (:tropes (stringify-ids (mc/find-one-as-map db "stories" {:_id (ObjectId. id)}))))
+
+
 (defn get-story [id]
   (stringify-ids (mc/find-one-as-map db "stories" {:_id (ObjectId. id)})))
 
@@ -86,13 +91,18 @@
   (let [id (:id data)
         player (get-character-by-id (:player data))
         event (assoc data :player (:label player))
+        story-id (:story-id data)
         ;; story (get-story id)
         ]
     (do
       (new-event data)
       (println "UPDATE STORY:")
-      (println (solve-story id (get-tropes) (get-events)))
-      (solve-story id (get-tropes) (get-events))))
+      (println "Tropes: ")
+      (println (get-tropes-for-story story-id))
+      (println "Events: ")
+      (println (get-events-for-story story-id))
+      (println (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id)))
+      (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id))))
     )
 
 (defn delete-story [id]

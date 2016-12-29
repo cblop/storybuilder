@@ -474,6 +474,7 @@
      (do
        (POST (str host "/stories/event") {:params
                                           {:id @story-id
+                                           :story-id @story-id
                                            :player @player
                                            :verb @verb
                                            :object-a @object-a
