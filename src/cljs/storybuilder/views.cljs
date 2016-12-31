@@ -2,8 +2,8 @@
     (:require [re-frame.core :as re-frame]
               [reagent.core :as reagent]
               [re-com.core :as com]
-              [cljsjs.vis]
-              ))
+              [cljsjs.vis]))
+
 
 
 ;; (strokes/bootstrap)
@@ -26,9 +26,9 @@
      :children [
                 [com/title
                  :label "Story Builder"
-                 :level :level1]
-                ]
-     ]))
+                 :level :level1]]]))
+
+
 
 
 ;; EDIT
@@ -42,9 +42,9 @@
         update (fn [comp]
                    (do
                      (.setValue @codem (:text (reagent/props comp)))
-                     (.setCursor @codem (clj->js (:cursor (reagent/props comp))))
-                     ))
-        ]
+                     (.setCursor @codem (clj->js (:cursor (reagent/props comp))))))]
+
+
     (reagent/create-class
      {:reagent-render (fn []
                         [com/input-textarea
@@ -52,10 +52,10 @@
                          :width "600px"
                          :height "400px"
                          :model ""
-                         :on-change #()
+                         :on-change #()])
                          ;; :on-change #(re-frame/dispatch [:tropes-changed %])
-                         ]
-                        )
+
+
       :component-did-mount (fn [comp]
                              (let [canvas (.getElementById js/document "tropes-editor")
                                    cm (.fromTextArea js/CodeMirror canvas options)]
@@ -64,8 +64,8 @@
                                  (reset! codem cm)))
                              (update comp))
       :component-did-update update
-      :display-name "codemirror-inner"})
-    ))
+      :display-name "codemirror-inner"})))
+
 
 
 (defn new-trope []
@@ -78,15 +78,15 @@
                  :width "100%"
                  :model (if-not (nil? @new-trope) (:label @new-trope) "")
                  :change-on-blur? false
-                 :on-change #(re-frame/dispatch [:new-trope-name %])]
-                ]]))
+                 :on-change #(re-frame/dispatch [:new-trope-name %])]]]))
+
 
 (defn edit-trope-select []
   (let [
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         all-tropes (re-frame/subscribe [:tropes])
-        editing-trope (re-frame/subscribe [:editing-trope])
-        ]
+        editing-trope (re-frame/subscribe [:editing-trope])]
+
     [com/v-box
      :children [
                 [com/label :label "Trope Name"]
@@ -98,8 +98,8 @@
                  ;; :model (:id (nth @our-tropes n))
                  :model @editing-trope
                  :filter-box? true
-                 :on-change #(re-frame/dispatch [:editing-trope %])
-                 ]]]))
+                 :on-change #(re-frame/dispatch [:editing-trope %])]]]))
+
 
 
 (defn edit-trope-tabs
@@ -110,14 +110,14 @@
                 [com/horizontal-bar-tabs
                  :tabs [{:id :edit :label "Edit"} {:id :new :label "New"}]
                  :model @tabid
-                 :on-change #(re-frame/dispatch [:edit-tab-changed %])
-                 ]
+                 :on-change #(re-frame/dispatch [:edit-tab-changed %])]
+
                 gap
                 (case @tabid
                   :edit [edit-trope-select]
                   :new [new-trope]
-                  gap)
-                ]]))
+                  gap)]]))
+
 
 
 
@@ -139,8 +139,8 @@
         edit-facet (re-frame/subscribe [:edit-facet])
         trope-name (re-frame/subscribe [:editing-trope-name])
         error (re-frame/subscribe [:error])
-        success (re-frame/subscribe [:success])
-        ]
+        success (re-frame/subscribe [:success])]
+
     [com/v-box
      :padding "25px"
      :children [
@@ -173,8 +173,8 @@
                                                     spacer
                                                     [delete-trope-button]
                                                     spacer
-                                                    [save-trope-button]]
-                                         ]
+                                                    [save-trope-button]]]
+
                                         gap
                                         [com/h-box
                                          :justify :end
@@ -182,20 +182,20 @@
                                                     (if @success
                                                       [:span {:style {:font-size "30px" :color "green"}} \u2713])
                                                     (if @error
-                                                      [:span {:style {:font-size "30px" :color "red"}} \u2718])]]
-                                        ]
-                             ]
-                            ]]]]))
+                                                      [:span {:style {:font-size "30px" :color "red"}} \u2718])]]]]]]]]))
+
+
+
 
 ;; SCENES
 
 
 (defn place-select [loc places sel n]
-  (let [
+  (let []
         ;; chars (re-frame/subscribe [:chars-for-archetype role])
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; this-trope (nth @our-tropes n)
-        ]
+
     [com/v-box
      :children [
                 [com/label :label loc :style {:font-size "smaller"}]
@@ -212,11 +212,11 @@
 
 
 (defn obj-select [type objs sel n]
-  (let [
+  (let []
         ;; chars (re-frame/subscribe [:chars-for-archetype role])
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; this-trope (nth @our-tropes n)
-        ]
+
     [com/v-box
      :children [
                 [com/label :label type :style {:font-size "smaller"}]
@@ -233,11 +233,11 @@
 
 
 (defn char-select [role chars sel n]
-  (let [
+  (let []
         ;; chars (re-frame/subscribe [:chars-for-archetype role])
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; this-trope (nth @our-tropes n)
-        ]
+
     [com/v-box
      :children [
                 [com/label :label role :style {:font-size "smaller"}]
@@ -261,19 +261,19 @@
         sel-places (:places (nth @our-tropes n))
         p (println "PLACES: ")
         triples (map vector (set @locs) (set @all-places) sel-places)
-        p (println triples)
+        p (println triples)]
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
-        ]
+
     (if-not (or (empty? @locs) (nil? @locs))
       [com/v-box
        :style {:padding "20px" :background-color "#ffdddd" :border "#ff9999 solid 2px"}
        :children (concat [[com/label :label "Places"] gap] (into []
-                                                                  (apply concat (for [[x y z] triples]
-                                                                                  [[place-select x y z n] spacer]))
-                                                                  ))
-       ])
-    ))
+                                                                 (apply concat (for [[x y z] triples]
+                                                                                 [[place-select x y z n] spacer]))))])))
+
+
+
 
 (defn objects [n]
   (let [
@@ -283,19 +283,19 @@
         sel-objs (:objects (nth @our-tropes n))
         p (println "OBJS: ")
         triples (map vector (set @types) (set @all-objs) sel-objs)
-        p (println triples)
+        p (println triples)]
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
-        ]
+
     (if-not (or (empty? @types) (nil? @types))
       [com/v-box
        :style {:padding "20px" :background-color "#ffdd77" :border "#ffbb00 solid 2px"}
        :children (concat [[com/label :label "Objects"] gap] (into []
-                             (apply concat (for [[x y z] triples]
-                                             [[obj-select x y z n] spacer]))
-                             ))
-       ])
-     ))
+                                                             (apply concat (for [[x y z] triples]
+                                                                             [[obj-select x y z n] spacer]))))])))
+
+
+
 
 (defn characters [n]
   (let [
@@ -309,19 +309,19 @@
         ;; p (println chars)
         p (println "ROLES: ")
         triples (map vector (set @roles) (set @all-chars) sel-chars)
-        p (println triples)
+        p (println triples)]
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
-        ]
+
     (if-not (or (empty? @roles) (nil? @roles))
       [com/v-box
        :style {:padding "20px" :background-color "#ddddff" :border "#9999ff solid 2px"}
        :children (concat [[com/label :label "Characters"] gap] (into []
-                             (apply concat (for [[x y z] triples]
-                                             [[char-select x y z n] spacer]))
-                             ))
-       ])
-     ))
+                                                                (apply concat (for [[x y z] triples]
+                                                                                [[char-select x y z n] spacer]))))])))
+
+
+
 
 
 (defn trope-select [n]
@@ -338,11 +338,11 @@
                              :choices @all-tropes
                              :model (:id (nth @our-tropes n))
                              :filter-box? true
-                             :on-change #(re-frame/dispatch [:change-trope n %])]
+                             :on-change #(re-frame/dispatch [:change-trope n %])]]]]]))
                             ;; gap
 
                             ;; [save-trope-button]
-                            ]]]]))
+
 
 
 
@@ -354,8 +354,8 @@
                 [com/button
                  :class "btn-warning"
                  :label (if @subverted "Un-subvert" "Subvert")
-                 :on-click #(re-frame/dispatch [:subvert-trope n])]]])
-  )
+                 :on-click #(re-frame/dispatch [:subvert-trope n])]]]))
+
 
 
 (defn remove-trope [n]
@@ -365,8 +365,8 @@
               [com/button
                :class "btn-danger"
                :label "Delete"
-               :on-click #(re-frame/dispatch [:remove-trope n])]]]
-  )
+               :on-click #(re-frame/dispatch [:remove-trope n])]]])
+
 
 
 (defn trope-box [n]
@@ -374,8 +374,8 @@
         subverted (re-frame/subscribe [:subverted? n])
         roles (re-frame/subscribe [:roles n])
         p (println "NTH: ")
-        p (println n)
-        ]
+        p (println n)]
+
     [com/v-box
      :style (if @subverted {:background-color "#ffdddd" :border "#ff9999 solid 2px"}
                 {:background-color "#ddffdd"
@@ -389,8 +389,8 @@
                             gap
                             [places n]
                             gap
-                            [objects n]
-                            ]]
+                            [objects n]]]
+
                 gap
                 [com/h-box
                  :justify :center
@@ -400,17 +400,17 @@
                             (if (and (> n 0) (> (count @roles) 1))
                               gap)
                             (if (> n 0)
-                              [remove-trope n])
-                            ]]
-                ]
-     ]))
+                              [remove-trope n])]]]]))
+
+
+
 
 (defn trope-boxes []
   (let [our-tropes (re-frame/subscribe [:our-tropes])
         boxes (into [] (apply concat (for [t (range (count @our-tropes))] [[trope-box t] gap])))]
     [com/v-box
-     :children boxes
-     ]))
+     :children boxes]))
+
 
 (defn add-trope []
   [com/h-box
@@ -430,8 +430,8 @@
                :width "725px"
                :children [
                           [trope-boxes]
-                          [add-trope]
-                          ]]]])
+                          [add-trope]]]]])
+
 
 
 (defn arrange-tab []
@@ -447,8 +447,8 @@
         dec (- (/ (- index (mod index 10)) 10) 1)
         rem (- (mod index 10) 1)]
     (if (zero? index) "You are here."
-        (first (:observed (nth (nth @events rem) dec)))))
-  )
+        (first (:observed (nth (nth @events rem) dec))))))
+
 
 ;; move this to handlers.cljs
 ;; don't forget: you _could_ have multiple events in each timestep!
@@ -467,8 +467,8 @@
                           e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
                           n (merge {:label label :id this-id :level ts-num} (if (> ts-num 1) {:color "#dddddd" :font {:color "#999999"}} {}))]
                       (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num)))))]
-          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
-  )
+          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options)))))))
+
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 
@@ -479,8 +479,8 @@
                     (do
                       (println (str "COMP: " (:graph (reagent/props comp))))
                       (.setData (:network @visi) (clj->js graph))
-                      (.redraw (:network @visi))
-                      )))]
+                      (.redraw (:network @visi)))))]
+
      (reagent/create-class
       {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
        :component-did-mount (fn [comp]
@@ -488,10 +488,10 @@
                                     container (.getElementById js/document "graph")
                                     options {
                                              :physics {:hierarchicalRepulsion {:springLength 300}}
-                                             :layout {:hierarchical {:direction "LR"}}
-                                             }
-                                    network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))
-                                    ]
+                                             :layout {:hierarchical {:direction "LR"}}}
+
+                                    network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))]
+
                                 (do
                                   (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))
                                   (.on network "selectNode"  #(re-frame/dispatch [:story-action (index->event (js/parseInt (first (get (js->clj %) "nodes"))))]))
@@ -526,17 +526,17 @@
         ;; o-strs (map str cogroups)
         ;; o-strs (map #(map :obl %) (map :obls text-list))
 
-        c-strs (mapcat vector p-strs o-strs)
+        c-strs (mapcat vector p-strs o-strs)]
 
         ;; chars (map (fn [x] (remove nil? (vec (set (map #(first (:params %)) x))))) perms)
         ;; c-perms (remove nil? (map (fn [x] (filter #(= (first (:params %)) x) perms)) chars))
-        ]
+
     ;; (concat [intro] (for [c c-perms] [(str (first (:params c)) ": " (map :perm c))]))
     ;; (concat [intro] perms)
     ;; (str perms)
-    (concat [intro] (map #(reduce str %) c-strs))
+    (concat [intro] (map #(reduce str %) c-strs))))
     ;; (map str text-list)
-    ))
+
 
 (defn text-div []
   (let [story (re-frame/subscribe [:story-text])]
@@ -544,8 +544,8 @@
     ;;  [:p (reduce str (interpose "\n" @story))]
     ;;  ]
     [:div
-     (for [x (describe-norms @story)] [:div [:p x] [:br]])]
-    ))
+     (for [x (describe-norms @story)] [:div [:p x] [:br]])]))
+
 
 (defn output []
   [com/scroller
@@ -570,8 +570,8 @@
   (let [
         chars (re-frame/subscribe [:our-characters])
         info (map #(assoc % :label (str (:label %) " (" (:role %) ")")) (remove nil? @chars))
-        player (re-frame/subscribe [:player])
-        ]
+        player (re-frame/subscribe [:player])]
+
     [com/v-box
      :children [
                 [com/h-box
@@ -615,13 +615,13 @@
                 [com/button
                  :label "Go!"
                  :class "btn-success"
-                 :on-click #(re-frame/dispatch [:story-event])]
-                ]
-     ]))
+                 :on-click #(re-frame/dispatch [:story-event])]]]))
+
+
 
 (defn play-tab []
   (let [
-        story-graph (re-frame/subscribe [:story-sets])
+        story-graph (re-frame/subscribe [:story-sets])]
         ;; story-graph (re-frame/subscribe [:story-graph])
         ;; graph  [; answer set
         ;;         [; time step
@@ -650,7 +650,7 @@
         ;;           }
         ;;          ]
         ;;         ]
-        ]
+
     [com/v-box
      :children
      [
@@ -686,7 +686,7 @@
                                  :justify :center
                                  :children [
                                             [go-button]]]]]]]
-        [vis-inner {:graph @story-graph}]
+        [vis-inner {:graph @story-graph}])]]))
         ;; [com/v-box
         ;;  :children [
         ;;             [com/h-box
@@ -703,8 +703,8 @@
         ;;              :children [
         ;;                         [output]]]
         ;;             ]]
-        )
-      ]]))
+
+
 
 
 (defn tabs []
@@ -725,16 +725,16 @@
 
 (defn error-dialog [message]
   (let [lines (clojure.string/split-lines message)]
-                [com/alert-box
-                 :id 1
-                 :alert-type :danger
-                 :heading (first lines)
-                 :body [:div (for [s (rest lines)] [:p s])]
-                 :closeable? true
-                 :on-close #(re-frame/dispatch [:hide-error])
-                 ]
-                )
-    )
+       [com/alert-box
+        :id 1
+        :alert-type :danger
+        :heading (first lines)
+        :body [:div (for [s (rest lines)] [:p s])]
+        :closeable? true
+        :on-close #(re-frame/dispatch [:hide-error])]))
+
+
+
 
 
 (defn main-panel []
@@ -746,6 +746,6 @@
                   [tabs]
                   [content]
                   (when @error
-                    [error-dialog @error]
-                    )
-                  ]])))
+                    [error-dialog @error])]])))
+
+

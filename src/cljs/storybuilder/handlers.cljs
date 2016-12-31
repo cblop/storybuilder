@@ -25,8 +25,8 @@
  (fn [db [_ response]]
    (do
      (println (str "BAD RESPONSE: " response))
-     db)
-   ))
+     db)))
+
 
 
 (re-frame/register-handler
@@ -34,8 +34,8 @@
  (fn [db [_ response]]
    (do
      (println (str "SERVER ERROR: " response))
-     db)
-   ))
+     db)))
+
 
 (re-frame/register-handler
  :load-tropes-handler
@@ -49,8 +49,8 @@
    (println response)
    ;; (re-frame/dispatch [:story-event])
    ;; (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))
-   (assoc (assoc db :story-id (:id response)) :story-sets (:sets response))
-   ))
+   (assoc (assoc db :story-id (:id response)) :story-sets (:sets response))))
+
 
 (re-frame/register-handler
  :success
@@ -72,8 +72,8 @@
                   (re-frame/dispatch [:clear-text])
                   (re-frame/dispatch [:success])
                   db)
-       (assoc db :error true))
-   ))
+       (assoc db :error true))))
+
 
 (re-frame/register-handler
  :edit-trope-handler
@@ -81,8 +81,8 @@
    (if response (do
                   (re-frame/dispatch [:load-tropes])
                   (assoc db :success true))
-       (assoc db :error true))
-   ))
+       (assoc db :error true))))
+
 
 (re-frame/register-handler
  :load-tropes
@@ -103,22 +103,21 @@
                                           :format :json
                                           :handler #(re-frame/dispatch [:delete-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])}))
-     db
-     )))
+     db)))
+
 
 (re-frame/register-handler
  :load-characters-handler
  (fn [db [_ response]]
    (assoc db :characters response)))
 
-
 (re-frame/register-handler
  :load-characters
  (fn [db _]
-   (GET (str host "/characters/") {:handler #(re-frame/dispatch [:load-characters-handler %1])
+   (GET (str host "/characters/") {:handler #(re-frame/dispatch [:load-characters-handler %1])}
                                :bad-response #(re-frame/dispatch [:bad-response %1])
                                :response-format :json
-                               :keywords? true})
+                               :keywords? true)
    db))
 
 
@@ -164,8 +163,8 @@
      (assoc db :our-tropes
             (-> (:our-tropes db)
                 (assoc-in [n :characters] new-chars)
-                (assoc-in [n :subverted] (not sub))))
-     )))
+                (assoc-in [n :subverted] (not sub)))))))
+
 
 (re-frame/register-handler
  :hide-error
@@ -206,8 +205,8 @@
    (let [trope (first (filter #(= (:id %) id) (:tropes db)))
          roles (:roles trope)
          objects (:objects trope)
-         locs (:locations trope)
-         ]
+         locs (:locations trope)]
+
      ;; (println (:our-tropes db))
      (assoc db :our-tropes (assoc (:our-tropes db) n {:id id :label (:label trope) :events (:events trope) :subverted false :places (into [] (take (count locs) (repeat nil))) :objects (into [] (take (count objects) (repeat nil))) :characters (into [] (take (count roles) (repeat nil)))})))))
 
@@ -278,8 +277,8 @@
         (assoc
          (assoc db :trope-text text)
          :tropes-cursor-pos cursor)
-        :success nil)
-       ))))
+        :success nil)))))
+
 
 (re-frame/register-handler
  :scroll-down
@@ -287,8 +286,8 @@
    (let [scroller (.getElementById js/document "scroller")]
      (do
        (aset scroller "scrollTop" (.-scrollHeight scroller))
-       db)))
- )
+       db))))
+
 
 ;; (re-frame/register-handler
 ;;  :go-button
@@ -303,8 +302,8 @@
 (re-frame/register-handler
  :new-trope-name
  (fn [db [_ text]]
-   (assoc-in db [:new-trope :label] text)
-   ))
+   (assoc-in db [:new-trope :label] text)))
+
 
 (re-frame/register-handler
  :editing-trope
@@ -323,8 +322,8 @@
  (fn [db [_ hmap]]
    (let [editing (re-frame/subscribe [:editing-trope])
          name (re-frame/subscribe [:editing-trope-name])
-         removed (remove #(= (:id %) @editing) (:tropes db))
-         ]
+         removed (remove #(= (:id %) @editing) (:tropes db))]
+
      (assoc db :tropes (merge removed (merge {:id @editing} {:label (:label @name)} (:trope hmap)))))))
 
 
@@ -342,31 +341,31 @@
          (POST (str host "/tropes/new") {:params new-trope
                                           :handler #(re-frame/dispatch [:edit-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
-                                          :format :json
-                                         })
+                                          :format :json})
+
          db)
        (do
          (POST (str host "/tropes/edit") {:params new-trope
                                           :handler #(re-frame/dispatch [:edit-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
-                                          :format :json
-                                          })
-         db)))
-   ))
+                                          :format :json})
+
+         db)))))
+
 
 
 (defn nil-indices [items]
   (->> items
        (map-indexed vector)
        (filter #(nil? (second %)))
-       (map first)
-       ))
+       (map first)))
+
 
 (defn nil-types [items key tropeid]
   (let [indices (nil-indices items)
         trope (re-frame/subscribe [:trope-for-id tropeid])
-        types (get @trope key)
-        ]
+        types (get @trope key)]
+
     (map #(vector % (nth types %)) indices)))
 
 (re-frame/register-handler
@@ -375,8 +374,8 @@
    (let [our-tropes (re-frame/subscribe [:our-tropes])
          nil-roles (keep-indexed #(vector %1 (nil-types (:characters %2) :roles (:id %2))) @our-tropes)
          nil-objects (keep-indexed #(vector %1 (nil-types (:objects %2) :objects (:id %2))) @our-tropes)
-         nil-places (keep-indexed #(vector %1 (nil-types (:places %2) :locations (:id %2))) @our-tropes)
-         ]
+         nil-places (keep-indexed #(vector %1 (nil-types (:places %2) :locations (:id %2))) @our-tropes)]
+
      (do
        (println "ROLES:")
        (println nil-roles)
@@ -397,9 +396,9 @@
          (if-not (empty? (second nrs))
            (doseq [nss (second nrs)]
              (re-frame/dispatch [:change-nil-place (first nrs) (first nss) (random-place (second nss))]))))
-       db)
-     )
-     ))
+       db))))
+
+
 
 (re-frame/register-handler
  :tab-changed
@@ -437,8 +436,8 @@
    ;; (println (trace-to-options (:text response)))
    (do
      (println (:sets response))
-     (assoc db :story-sets (:sets response))
-     )))
+     (assoc db :story-sets (:sets response)))))
+
 
 (re-frame/register-handler
  :story-action
@@ -469,8 +468,8 @@
          object-a (re-frame/subscribe [:story-object-a])
          object-b (re-frame/subscribe [:story-object-b])
          player (re-frame/subscribe [:player])
-         story-id (re-frame/subscribe [:story-id])
-         ]
+         story-id (re-frame/subscribe [:story-id])]
+
      (do
        (POST (str host "/stories/event") {:params
                                           {:id @story-id
@@ -483,10 +482,10 @@
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
                                           :response-format :json
-                                          :keywords? true
-                                          })
-       db))
-   ))
+                                          :keywords? true})
+
+       db))))
+
 
 
 
@@ -503,20 +502,20 @@
          place-pairs (map #(hash-map :class (:location %) :iname (:label %)) @our-places)
          story {:storyname "story"
                 :tropes (map :label @our-tropes)
-                :instances (concat role-pairs obj-pairs place-pairs)
-                }]
+                :instances (concat role-pairs obj-pairs place-pairs)}]
+
      (do (POST (str host "/stories/new") {:params {:story story
                                                    :tropes @our-tropes
                                                    :characters @our-characters
                                                    :objects @our-objects
                                                    :places @our-places
-                                                   :player @player}
+                                                   :player @player}}
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
                                           :response-format :json
-                                          :keywords? true
-                                          })))
+                                          :keywords? true)))
+
    db))
 
 (defn str-failure
@@ -524,10 +523,10 @@
   [{:keys [line column text reason]}]
   (let [
         ermsg (str "Parse error at line " line ", column " column ".\n")
-        sorry "Check the javascript console for details."
-        ]
-    (str ermsg sorry)
-    ))
+        sorry "Check the javascript console for details."]
+
+    (str ermsg sorry)))
+
 
 (re-frame/register-handler
  :parse-trope
@@ -547,10 +546,10 @@
            (println tmap)
            (re-frame/dispatch [:update-trope tmap])
            (re-frame/dispatch [:save-trope])
-           db
-           ))
-       ))
-   ))
+           db))))))
+
+
+
 
 (re-frame/register-handler
  :initialize-db

@@ -20,5 +20,5 @@
   (re-frame/dispatch [:load-objects])
   (re-frame/dispatch [:load-places])
   ;; (re-frame/dispatch [:load-stories])
-  (mount-root)
-  )
+  (mount-root))
+

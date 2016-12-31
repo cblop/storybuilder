@@ -21,6 +21,11 @@
      (reaction match))))
 
 (re-frame/register-sub
+  :db
+  (fn [db _]
+    (reaction @db)))
+
+(re-frame/register-sub
  :edit-facet
  (fn [db _]
    (reaction (:edit-facet @db))))
@@ -102,8 +107,8 @@
  :chars-for-roles
  (fn [db [_ roles]]
    (let [chars (map (fn [x] (filter #(in? (:roles %) x) (:characters @db))) roles)]
-     (reaction chars))
-   ))
+     (reaction chars))))
+
 
 
 (re-frame/register-sub
@@ -117,36 +122,36 @@
  :places-for-locations
  (fn [db [_ locs]]
    (let [places (map (fn [x] (filter #(in? (:locations %) x) (:places @db))) locs)]
-     (reaction places))
-   ))
+     (reaction places))))
+
 
 (re-frame/register-sub
  :our-characters
  (fn [db _]
    (let [tropes (:our-tropes @db)]
-     (reaction (mapcat :characters tropes)))
-   ))
+     (reaction (mapcat :characters tropes)))))
+
 
 (re-frame/register-sub
  :our-places
  (fn [db _]
    (let [tropes (:our-tropes @db)]
-     (reaction (mapcat :places tropes)))
-   ))
+     (reaction (mapcat :places tropes)))))
+
 
 (re-frame/register-sub
  :our-objects
  (fn [db _]
    (let [tropes (:our-tropes @db)]
-     (reaction (mapcat :objects tropes)))
-   ))
+     (reaction (mapcat :objects tropes)))))
+
 
 
 (re-frame/register-sub
  :player
  (fn [db _]
-     (reaction (:player @db)))
-   )
+     (reaction (:player @db))))
+
 
 
 (re-frame/register-sub
@@ -167,8 +172,8 @@
  :objs-for-types
  (fn [db [_ types]]
    (let [objs (map (fn [x] (filter #(in? (:types %) x) (:objects @db))) types)]
-     (reaction objs))
-   ))
+     (reaction objs))))
+
 
 (re-frame/register-sub
  :new-trope-name
@@ -208,8 +213,8 @@
 (defn make-dropdowns [things]
   (map #(if (:perm %)
           (hash-map :id (:perm %) :label (:perm %))
-          (hash-map :id (:event %) :label (:event %))
-          ) things))
+          (hash-map :id (:event %) :label (:event %)))
+        things))
 
 (defn embellish [word]
   (->> word

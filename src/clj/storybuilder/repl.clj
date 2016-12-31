@@ -47,8 +47,8 @@
               :source ""
               :roles ["Hero"]
               :locations []
-              :objects ["Weapon"]})
-  )
+              :objects ["Weapon"]}))
+
 
 (reset-collection! "tropes")
 
@@ -181,9 +181,9 @@
               :locations ["Home"]})
 
   (new-place {:label "4 Privet Drive"
-              :locations ["Home"]})
+              :locations ["Home"]}))
 
-  )
+
 
 (count (get-places))
 (get-places)
@@ -213,32 +213,32 @@
   [events index]
   (let [dec (- (/ (- index (mod index 10)) 10) 1)
         rem (- (mod index 10) 1)]
-    (nth (nth events rem) dec))
-  )
+    (nth (nth events rem) dec)))
+
 
 
 (index->event [; answer set
-              [; time step
-               {:observed [{:event "go"
-                            :params ["south"]
-                            :inst "Hero's Journey"}]
-                :fluents []}
-               {:observed [{:event "run"
-                            :params ["away"]
-                            :inst "Hero's Journey"}]
-                :fluents []}
-               ]
-              [; time step
-               {:observed [{:event "take"
-                            :params ["sword"]
-                            :inst "Hero's Journey"}]
-                :fluents []}]
-              [; time step
-               {:observed [{:event "go"
-                            :params ["north"]
-                            :inst "Evil Empire"}]
-                :fluents []}]
-              ] 21)
+               [; time step
+                {:observed [{:event "go"
+                             :params ["south"]
+                             :inst "Hero's Journey"}]
+                 :fluents []}
+                {:observed [{:event "run"
+                             :params ["away"]
+                             :inst "Hero's Journey"}]
+                 :fluents []}]
+
+               [; time step
+                {:observed [{:event "take"
+                             :params ["sword"]
+                             :inst "Hero's Journey"}]
+                 :fluents []}]
+               [; time step
+                {:observed [{:event "go"
+                             :params ["north"]
+                             :inst "Evil Empire"}]
+                 :fluents []}]]
+              21)
 
 
 
@@ -258,8 +258,8 @@
                           e {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}}
                           n {:label label :id this-id :level ts-num}]
                       (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num)))))]
-          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
-  )
+          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options)))))))
+
 
 (data->graph [; answer set
               [; time step
@@ -270,8 +270,8 @@
                {:observed [{:event "run"
                             :params ["away"]
                             :inst "Hero's Journey"}]
-                :fluents []}
-               ]
+                :fluents []}]
+
               [; time step
                {:observed [{:event "take"
                             :params ["sword"]
@@ -281,6 +281,6 @@
                {:observed [{:event "go"
                             :params ["north"]
                             :inst "Evil Empire"}]
-                :fluents []}]
-              ])
+                :fluents []}]])
+
 
