@@ -7,6 +7,8 @@
 (get-events-for-story (nth (map :story-id (get-events)) 4))
 (get-events-for-story (nth (map :story-id (get-events)) 5))
 (get-tropes-for-story (nth (map :story-id (get-events)) 5))
+(get-events-for-story (last (map :story-id (get-events))))
+(get-tropes-for-story (last (map :story-id (get-events))))
 
 (let [id (last (map :story-id (get-events)))]
   (solve-story
@@ -50,6 +52,7 @@
               :objects ["Weapon"]})
   )
 
+(get-tropes)
 (reset-collection! "tropes")
 
 (do

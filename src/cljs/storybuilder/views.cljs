@@ -131,7 +131,9 @@
   [com/button
    :label "Save Trope"
    :class "btn-primary"
-   :on-click #(re-frame/dispatch [:parse-trope])])
+   :on-click #(do
+                (re-frame/dispatch [:parse-trope])
+                (re-frame/dispatch [:load-tropes]))])
 
 (defn edit-tab []
   (let [trope-text (re-frame/subscribe [:trope-text])

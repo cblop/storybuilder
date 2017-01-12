@@ -1,5 +1,8 @@
 (ns storybuilder.datastore
   (:require [tropic.solver :refer [make-story solve-story]]
+            [tropic.parser :refer [parse-trope]]
+            [tropic.gen  :refer [make-map]]
+            [clojure.string :as str]
             [monger.core :as mg]
             [monger.result :refer [acknowledged?]]
             [monger.collection :as mc])
@@ -8,6 +11,9 @@
 
 (defonce conn (mg/connect))
 (def db (mg/get-db conn "storybuilder"))
+
+(defn add-whitespace [text]
+  (str "  " (str/replace text "\n" "\n  ")))
 
 (declare get-character-by-id)
 
@@ -52,17 +58,30 @@
   (let [oid (ObjectId. (:id trp))]
     (stringify-ids (mc/find-one-as-map db "tropes" {:_id oid}))))
 
+(defn make-trope [data]
+  (let [new-trope (str "\"" (:label data) "\"" " is a trope where:\n" (add-whitespace (:source data)))
+        parsed-trope (parse-trope new-trope)
+        tmap (make-map parsed-trope)]
+    (println "TMAP:")
+    (println tmap)
+    ;; (assoc data :trope (:trope tmap) :roles (:roles (:trope tmap)) :locations (:locations (:trope tmap))) :objects (:objects (:trope tmap))
+    ;; (assoc data :trope (:trope tmap))
+    ;; (assoc (merge data tmap) :roles (:roles (:trope tmap)) :locations (:locations (:trope tmap)) :objects (:objects (:trope tmap)))
+    (assoc (:trope tmap) :id (:id tmap) :source (:source data))
+    ))
+
 (defn new-trope [data]
-  (str (acknowledged? (mc/insert db "tropes" (merge {:_id (ObjectId.)} (dissoc data :id))))))
+  (let [trope (make-trope data)]
+    (str (acknowledged? (mc/insert db "tropes" (merge {:_id (ObjectId.)} (dissoc trope :id)))))))
 
 (defn delete-trope [id]
   (let [new-id (ObjectId. (str id))]
     (str (acknowledged? (mc/remove-by-id db "tropes" new-id)))))
 
 (defn edit-trope [data]
-  (let [p (println data)
+  (let [trope (make-trope data)
         new-id (ObjectId. (str (:id data)))]
-    (str (acknowledged? (mc/update-by-id db "tropes" new-id (assoc (dissoc data :id) :_id new-id))))))
+    (str (acknowledged? (mc/update-by-id db "tropes" new-id (assoc (dissoc trope :id) :_id new-id))))))
 
 
 ;; STORIES
@@ -89,19 +108,20 @@
 
 (defn update-story [data]
   (let [id (:id data)
-        player (get-character-by-id (:player data))
-        event (assoc data :player (:label player))
+        ;; player (get-character-by-id (:player data))
+        ;; event (assoc data :player (:label player))
+        event data
         story-id (:story-id data)
         ;; story (get-story id)
         ]
     (do
       (new-event data)
-      (println "UPDATE STORY:")
-      (println "Tropes: ")
-      (println (get-tropes-for-story story-id))
-      (println "Events: ")
-      (println (get-events-for-story story-id))
-      (println (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id)))
+      ;; (println "UPDATE STORY:")
+      ;; (println "Tropes: ")
+      ;; (println (get-tropes-for-story story-id))
+      ;; (println "Events: ")
+      ;; (println (get-events-for-story story-id))
+      ;; (println (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id)))
       (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id))))
     )
 

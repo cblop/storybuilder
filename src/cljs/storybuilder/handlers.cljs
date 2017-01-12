@@ -450,10 +450,12 @@
        (println "EVENT: " event)
        (POST (str host "/stories/event") {:params
                                           {:story-id @story-id
-                                           :player @player
+                                           ;; :player @player
+                                           :player (first (:params event))
                                            :verb (:event event)
-                                           :object-a (first (:params event))
-                                           :object-b (if (second (:params event)) (second (:params event)) nil)}
+                                           ;; :object-a (first (:params event))
+                                           :object-a (if (second (:params event)) (second (:params event)) nil)
+                                           :object-b (if (> (count (:params event)) 2) (nth (:params event) 2) nil)}
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
@@ -529,27 +531,14 @@
     (str ermsg sorry)
     ))
 
+
 (re-frame/register-handler
  :parse-trope
  (fn [db _]
-   (let [trope-text (re-frame/subscribe [:trope-text])
-         ptree (parse-trope @trope-text)
-         tmap (make-map ptree @trope-text)]
-     (do
-       (if (insta/failure? ptree)
-         (do
-           (println ptree)
-           (assoc db :error (str-failure (insta/get-failure ptree))))
-         (do
-           (println "PTREE: ")
-           (println ptree)
-           (println "MAP: ")
-           (println tmap)
-           (re-frame/dispatch [:update-trope tmap])
-           (re-frame/dispatch [:save-trope])
-           db
-           ))
-       ))
+   (do
+     (re-frame/dispatch [:save-trope])
+     db
+     )
    ))
 
 (re-frame/register-handler

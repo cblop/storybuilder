@@ -25,6 +25,12 @@
  (fn [db _]
    (reaction (:edit-facet @db))))
 
+
+(re-frame/register-sub
+ :db
+ (fn [db _]
+   (reaction @db)))
+
 (re-frame/register-sub
  :graph
  (fn [db _]

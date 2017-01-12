@@ -3,15 +3,39 @@
 
 (def trope-parser
   (insta/parser
-   "trope = (situationdef / alias / norms / sequence / situationdef)+ <'\\n'?>
+   "trope = (tropedef (<whitespace> (situationdef / alias / sequence))+ <'\\n'?>) | ((situationdef / alias / sequence)+ <'\\n'?>)
+
+    <tropedef> = label <' is a ' ('trope' / 'policy') ' where:\\n'>
+
     alias =
-        <whitespace> character <' is also '> character <'\\n'?>
+        (character <' is also '> character <'\\n'?>) | (object <' is '> object <'\\n'?>)
 
     situation =
         <'When '> event <':'>
 
+    conditional =
+        <'If ' | 'if '> (fluent / tverb / character <' '> (bverb / cverb)) <':'> outcome
+
+    fluent =
+        object <' is '> adjective
+
+    adjective = word
+
+    object = name
+
+    outcome =
+        (<'\\n' whitespace whitespace> (event | obligation | happens) or? <'\\n'?>)+
+
+    happens =
+       <the?> subtrope <(' happens' / ' policy applies') '.'?>
+
+
+    block =
+       <the?> subtrope <' policy does not apply' / ' does not happen'> <'.'?>
+
+
     sequence =
-        (<'Then '>? (event | obligation) or? <'\\n'?>)+
+        ((conditional | event | norms | happens | block)  <'\\n'?> or*) | ((conditional | event | norms | happens | block) (<'\\n' whitespace+ 'Then '> (block / conditional / event / obligation / happens) or*))*
 
     situationdef = situation (<'\\n'> <whitespace> norms | <'\\n'> <whitespace whitespace> consequence)+ <'\\n'?>
 
@@ -20,15 +44,30 @@
 
 
     event =
-        (character <' is'>? <' '> (move / task)) | give | meet | kill
+        (character <' is'>? <' '> (move / task)) / give / sell / tverb / meet / kill / pay
 
 
     give =
-        character <' gives '> character <' a ' / ' an '?> item
+        character <' gives ' ('the ' / 'a ' / 'an ')?> item <' to '>? <'a ' / 'an '>? character
+
+    sell =
+        character <' sells ' ('the ' / 'a ' / 'an ')?> item <' to '>? <'a ' / 'an '>? character
+
+    tverb =
+        character <' '> verb <(' the ' / ' a ' / ' an ')?> item <' to '>? <'a ' / 'an '>? character
+
+    bverb =
+        verb <(' the ' / ' a ' / ' an ')?> item <' to '>? <'a ' / 'an '>? character
+
+    cverb =
+        words <' the ' / ' a ' / ' an '> (object / character)
+
     meet =
         character <' meets '> character
     kill =
         character <' kills '> character
+    pay =
+        <'pay '> character
 
     norms = permission | obligation
 
@@ -36,24 +75,26 @@
 
     character = name
 
-    conditional =
-        <' if '> <'they '?> event
+    subtrope = <'\"'> words <'\"'>
+
+    label = <'\"'> words <'\"'>
 
     move = mverb <' '> <'to '?> place
-    mverb = 'go' / 'goes' / 'leave' / 'leaves' / 'return' / 'returns' / 'at' / 'come' / 'comes'
+    mverb = 'go' / 'goes' / 'leave' / 'leaves' / ('return' <!' the'>) / 'returns' <!' the'> / 'at' / 'come' / 'comes'
     verb = word
     place = name
 
+    <pverb> = verb (<' '> verb)*
 
-    permission = character <' may '> (move / task) conditional? <'\\n'?>
-    obligation = character <' must '> (move / task) (<' before '> deadline)? (<'\\n' whitespace+ 'Otherwise, '> <'the '?> violation)? <'.'?> <'\\n'?>
+    permission = character <' may '> (move / pay / bverb / cverb / task) conditional? <'\\n'?>
+    obligation = character <' must '> (move / pay / bverb / cverb / pverb / task) (<' before '> deadline)? (<'\\n' whitespace+ 'Otherwise, '> <'the '?> violation)? <'.'?> <'\\n'?>
 
     deadline = consequence
 
     task = pverb <' '> role-b / verb / (verb <(' the ' / ' a ' / ' an ')> item) / (verb <' '> item)
     role-b = name
 
-    pverb = 'kill' / 'kills'
+    pverb = 'kill' / 'kills' / 'refunds' / 'refund'
 
     consequence =
         [<'The ' / 'the '>] character <' will '>? <' '> (move / item)
@@ -63,10 +104,11 @@
 
     <whitespace> = #'\\s\\s'
 
-    <name> = (<'The ' | 'the '>)? cword
+    <name> = (<'The ' | 'the '>)? cwords
     <words> = word (<' '> word)*
     <cwords> = cword (<' '> cword)*
     <cword> = #'[A-Z][0-9a-zA-Z\\-\\_\\']*'
+    <the> = <'The ' | 'the '>
     <word> = #'[0-9a-zA-Z\\-\\_\\']*'"
    ))
 

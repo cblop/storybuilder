@@ -13,13 +13,16 @@
                  [me.raynes/conch "0.8.0"]
                  [ring/ring-defaults "0.2.0"]
                  [ring/ring-json "0.4.0"]
-                 [tropic "0.3.9"]
+                 [tropic "0.4.6"]
                  [cljsjs/vis "4.17.0-0"]
                  [com.lucasbradstreet/instaparse-cljs "1.4.1.1"]
                  [figwheel-sidecar "0.5.8"]
+                 [com.cemerick/piggieback "0.2.1"]
                  [ring "1.4.0"]]
 
   :min-lein-version "2.5.3"
+
+  :repl-options {:nrepl-middleware [cemerick.piggieback/wrap-cljs-repl]}
 
   :source-paths ["src/clj"
                  "cljs_src"]

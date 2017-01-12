@@ -7,5 +7,8 @@
 (println @db)
 
 (:characters @db)
+(:objects @db)
+(:tropes @db)
+(keys @db)
 
 
