@@ -415,6 +415,11 @@
    (assoc db :player player)))
 
 (re-frame/register-handler
+ :update-graph
+ (fn [db [_ graph]]
+   (assoc db :story-graph graph)))
+
+(re-frame/register-handler
  :update-story-verb
  (fn [db [_ verb]]
    (assoc db :story-verb verb)))

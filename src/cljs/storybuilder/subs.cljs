@@ -32,6 +32,11 @@
    (reaction (:lookahead @db))))
 
 (re-frame/register-sub
+ :story-graph
+ (fn [db _]
+   (reaction (:story-graph @db))))
+
+(re-frame/register-sub
  :db
  (fn [db _]
    (reaction @db)))

@@ -445,12 +445,13 @@
 ;; again, just the first event
 (defn index->event
   [index]
-  (let [events (re-frame/subscribe [:story-sets])
-        dec (- (/ (- index (mod index 10)) 10) 1)
-        rem (- (mod index 10) 1)]
-    (if (zero? index) "You are here."
-        (first (:observed (nth (nth @events rem) dec)))))
-  )
+  (let [graph (re-frame/subscribe [:story-graph])]
+    (:event (first (filter #(= (:id %) index) (:nodes @graph))))
+    ))
+
+(defn merge-nodes
+  [graph]
+  (let [parts (partition-by :level (:nodes graph))]))
 
 ;; move this to handlers.cljs
 ;; don't forget: you _could_ have multiple events in each timestep!
@@ -460,15 +461,21 @@
   (loop [answer-sets data as-num 1 nodes [{:id 0 :label "now" :level 0 :color "#FF3333"}] edges []]
     (if (empty? answer-sets) {:nodes nodes :edges edges}
         (let [options
-              (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1]
+              (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-id 0]
                 (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
                     (let [event (first (:observed (first time-step))) ; NOTE: this is just the FIRST event
                           label (str (:event event) " " (apply str (interpose " " (:params event))))
-                          prev-id (if (= 1 ts-num) 0 (+ (- (* 10 ts-num) 10) as-num))
-                          this-id (+ (* 10 ts-num) as-num)
+                          peers (filter #(= (:level %) ts-num) nodes)
+                          ;; unique (if (seq (filter #(= (:label %) label) peers)) false true)
+                          peer-id (:id (first (filter #(= (:label %) label) peers)))
+                          linked (seq (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
+                          this-id (if-not linked (int (gensym "")) peer-id)
                           e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-                          n (merge {:label label :id this-id :level ts-num} (if (> ts-num 1) {:color "#dddddd" :font {:color "#999999"}} {}))]
-                      (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num)))))]
+                          n (merge {:label label :id this-id :level ts-num :event event} (if (> ts-num 1) {:color "#dddddd" :font {:color "#999999"}} {}))]
+                      (if-not linked
+                        (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
+                        (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
+                        ))))]
           (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
   )
 
@@ -479,6 +486,7 @@
          update (fn [comp]
                   (let [graph (data->graph (:graph (reagent/props comp)))]
                     (do
+                      (re-frame/dispatch [:update-graph graph])
                       (println (str "COMP: " (:graph (reagent/props comp))))
                       (.setData (:network @visi) (clj->js graph))
                       (.redraw (:network @visi))
@@ -489,7 +497,9 @@
                               (let [
                                     container (.getElementById js/document "graph")
                                     options {
-                                             :physics {:hierarchicalRepulsion {:springLength 300}}
+                                             :physics {
+                                                       :hierarchicalRepulsion {:springLength 200
+                                                                               :nodeDistance 180}}
                                              :layout {:hierarchical {:direction "LR"}}
                                              }
                                     network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))
