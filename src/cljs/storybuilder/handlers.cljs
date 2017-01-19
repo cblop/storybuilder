@@ -441,10 +441,17 @@
      )))
 
 (re-frame/register-handler
+ :story-refresh
+ (fn [db _]
+   (re-frame/dispatch [:story-action {:event nil :params []}])
+   db))
+
+(re-frame/register-handler
  :story-action
  (fn [db [_ event]]
    (let [player (re-frame/subscribe [:player])
-         story-id (re-frame/subscribe [:story-id])]
+         story-id (re-frame/subscribe [:story-id])
+         lookahead (re-frame/subscribe [:lookahead])]
      (do
        (println "PLAYER: " @player)
        (println "EVENT: " event)
@@ -453,6 +460,7 @@
                                            ;; :player @player
                                            :player (first (:params event))
                                            :verb (:event event)
+                                           :lookahead @lookahead
                                            ;; :object-a (first (:params event))
                                            :object-a (if (second (:params event)) (second (:params event)) nil)
                                            :object-b (if (> (count (:params event)) 2) (nth (:params event) 2) nil)}
@@ -472,6 +480,7 @@
          object-b (re-frame/subscribe [:story-object-b])
          player (re-frame/subscribe [:player])
          story-id (re-frame/subscribe [:story-id])
+         lookahead (re-frame/subscribe [:lookahead])
          ]
      (do
        (POST (str host "/stories/event") {:params
@@ -479,6 +488,7 @@
                                            :story-id @story-id
                                            :player @player
                                            :verb @verb
+                                           :lookahead @lookahead
                                            :object-a @object-a
                                            :object-b @object-b}
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
@@ -491,6 +501,17 @@
    ))
 
 
+(re-frame/register-handler
+ :reset-vis
+ (fn [db _]
+   (re-frame/dispatch [:generate-story])
+   db))
+
+
+(re-frame/register-handler
+ :change-lookahead
+ (fn [db [_ la]]
+   (assoc db :lookahead la)))
 
 (re-frame/register-handler
  :generate-story
@@ -499,6 +520,7 @@
          our-characters (re-frame/subscribe [:our-characters])
          our-objects (re-frame/subscribe [:our-objects])
          our-places (re-frame/subscribe [:our-places])
+         lookahead (re-frame/subscribe [:lookahead])
          player (re-frame/subscribe [:player])
          role-pairs (map #(hash-map :class (:role %) :iname (:label %)) @our-characters)
          obj-pairs (map #(hash-map :class (:type %) :iname (:label %)) @our-objects)
@@ -512,6 +534,7 @@
                                                    :characters @our-characters
                                                    :objects @our-objects
                                                    :places @our-places
+                                                   :lookahead @lookahead
                                                    :player @player}
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])

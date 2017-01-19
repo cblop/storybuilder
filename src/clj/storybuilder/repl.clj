@@ -1,5 +1,7 @@
 (ns storybuilder.repl
   (:require [storybuilder.datastore :refer :all]
+            [tropic.parser :refer [parse-trope]]
+            [tropic.gen :refer [make-map]]
             [tropic.solver :refer [make-story solve-story]]))
 
 (map :story-id (get-events))
@@ -9,6 +11,8 @@
 (get-tropes-for-story (nth (map :story-id (get-events)) 5))
 (get-events-for-story (last (map :story-id (get-events))))
 (get-tropes-for-story (last (map :story-id (get-events))))
+
+(parse-trope "\"The Hero's Journey\" is a trope where:\n    The Hero is at Home\n  Then the Hero goes away\n    Or the Hero kill the Villain")
 
 (let [id (last (map :story-id (get-events)))]
   (solve-story
@@ -23,6 +27,8 @@
 (get-story "585d003359111a1296f87c88")
 (get-story (:id (first (get-stories))))
 (get-tropes-for-story (:id (nth (get-stories) 70)))
+(first (get-tropes-for-story (:id (last (get-stories)))))
+;; => {:characters [{:role "Hero", :label "Luke Skywalker", :id "586d153259111a0f09895659"} {:role "Villain", :label "Darth Vader", :id "586d153259111a0f0989565a"}], :objects [], :places [{:location "Away", :label "Space", :id "582487a35d2a0108a93fd8fa"} {:location "Home", :label "Tatooine", :id "582487a35d2a0108a93fd8fe"}], :subverted false, :events [{:role "Hero", :verb "go", :place "Home"} {:or [{:role "Hero", :verb "go", :place "Away"} {:role "Hero", :verb "kill", :role-b "Villain"}]}], :label "The Hero's Journey", :id "58806384a7986c11cd473ee5"}
 
 
 (reset-collection! "events")

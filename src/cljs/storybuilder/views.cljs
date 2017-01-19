@@ -484,7 +484,7 @@
                       (.redraw (:network @visi))
                       )))]
      (reagent/create-class
-      {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 600}}])
+      {:reagent-render (fn [] [:div#graph {:style {:width 800 :height 1000}}])
        :component-did-mount (fn [comp]
                               (let [
                                     container (.getElementById js/document "graph")
@@ -579,15 +579,37 @@
                 [com/h-box
                  :justify :center
                  :children [
-                            [com/title :label "Who do you want to be?" :level :level3]]]
+                            [com/title :label "Player character:" :level :level3]
+                            gap
+                            [com/single-dropdown
+                             :width "300px"
+                             :choices info
+                             :placeholder "(Random selection)"
+                             :model @player
+                             :filter-box? true
+                             :on-change #(re-frame/dispatch [:change-player %])]]]]]))
+
+(defn lookahead []
+  (let [la (re-frame/subscribe [:lookahead])]
+    [com/h-box
+     :justify :center
+     :children [[com/title :label "Lookahead:"]
                 gap
                 [com/single-dropdown
-                 :width "300px"
-                 :choices info
-                 :placeholder "(Random selection)"
-                 :model @player
-                 :filter-box? true
-                 :on-change #(re-frame/dispatch [:change-player %])]]]))
+                 :width "50px"
+                 :choices [
+                           {:id 1 :label "1"}
+                           {:id 2 :label "2"}
+                           {:id 3 :label "3"}
+                           {:id 4 :label "4"}
+                           {:id 5 :label "5"}
+                           ]
+                 :model @la
+                 :on-change #(do
+                               (re-frame/dispatch [:change-lookahead %])
+                               (re-frame/dispatch [:story-refresh]))
+                 ]
+                ]]))
 
 (defn action-boxes []
   (let [verbs (re-frame/subscribe [:story-verbs])
@@ -684,11 +706,34 @@
                      :children [
                                 [player-select]
                                 gap
+                                [lookahead]
+                                gap
                                 [com/h-box
                                  :justify :center
                                  :children [
                                             [go-button]]]]]]]
-        [vis-inner {:graph @story-graph}]
+        [com/v-box
+         :children [
+                    [com/h-box
+                     :justify :center
+                     :padding "40px 60px"
+                     :children [
+                                [lookahead]
+                                gap
+                                gap
+                                gap
+                                gap
+                                [player-select]
+                                gap
+                                gap
+                                [com/button
+                                 :label "Reset Story"
+                                 :class "btn-danger"
+                                 :on-click #(re-frame/dispatch [:reset-vis])]
+                                ]
+                     ]
+                    [vis-inner {:graph @story-graph}]
+                    ]]
         ;; [com/v-box
         ;;  :children [
         ;;             [com/h-box

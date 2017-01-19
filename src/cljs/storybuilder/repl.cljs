@@ -9,6 +9,9 @@
 (:characters @db)
 (:objects @db)
 (:tropes @db)
+(:editing-trope @db)
+(:lookahead @db)
+(first (filter #(= (:editing-trope @db) (:id %)) (:tropes @db)))
 (keys @db)
 
 

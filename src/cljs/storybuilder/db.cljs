@@ -20,4 +20,5 @@
    :story-perms nil
    :story-graph {:cx 100 :cy 100 :r 200 :fill "blue"}
    :svg nil
+   :lookahead 1
    })

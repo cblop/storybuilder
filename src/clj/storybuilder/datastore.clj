@@ -102,7 +102,7 @@
       (mc/insert db "stories" (merge {:_id id} data))
       ;; (make-story (assoc data :tropes (map get-trope-by-id (:tropes data))))
       (println "NEW STORY")
-      (make-story data (str id))
+      (make-story data (str id) (:lookahead data))
       ;; {:id (str id) :text "Testing..."}
       )))
 
@@ -115,14 +115,15 @@
         ;; story (get-story id)
         ]
     (do
-      (new-event data)
+      (if-not (nil? (:verb data))
+        (new-event data))
       ;; (println "UPDATE STORY:")
       ;; (println "Tropes: ")
       ;; (println (get-tropes-for-story story-id))
       ;; (println "Events: ")
       ;; (println (get-events-for-story story-id))
       ;; (println (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id)))
-      (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id))))
+      (solve-story story-id (get-tropes-for-story story-id) (get-events-for-story story-id) (:lookahead data))))
     )
 
 (defn delete-story [id]

@@ -27,6 +27,11 @@
 
 
 (re-frame/register-sub
+ :lookahead
+ (fn [db _]
+   (reaction (:lookahead @db))))
+
+(re-frame/register-sub
  :db
  (fn [db _]
    (reaction @db)))
