@@ -13,7 +13,7 @@
 
 (def tab-list [{:id :tab1 :label "Edit"}
                {:id :tab2 :label "Arrange"}
-               {:id :tab3 :label "Play"}])
+               ])
 
 (def spacer [com/gap :size "5px"])
 (def gap [com/gap :size "15px"])
@@ -49,7 +49,7 @@
      {:reagent-render (fn []
                         [com/input-textarea
                          :attr {:id "tropes-editor"}
-                         :width "600px"
+                         :width "300px"
                          :height "400px"
                          :model ""
                          :on-change #()
@@ -127,13 +127,21 @@
    :class "btn-danger"
    :on-click #(re-frame/dispatch [:delete-trope])])
 
+(defn sleep [msec]
+  (let [deadline (+ msec (.getTime (js/Date.)))]
+    (while (> deadline (.getTime (js/Date.))))))
+
 (defn save-trope-button []
   [com/button
    :label "Save Trope"
    :class "btn-primary"
    :on-click #(do
-                (re-frame/dispatch [:parse-trope])
-                (re-frame/dispatch [:load-tropes]))])
+                (re-frame/dispatch-sync [:parse-trope])
+                (re-frame/dispatch-sync [:load-tropes])
+                (sleep 100)
+                (re-frame/dispatch-sync [:generate-story])
+                )])
+
 
 (defn edit-tab []
   (let [trope-text (re-frame/subscribe [:trope-text])
@@ -146,26 +154,15 @@
     [com/v-box
      :padding "25px"
      :children [
-                ;; [com/h-box
-                ;;  :justify :center
-                ;;  :children [
-                ;;             [com/horizontal-bar-tabs
-                ;;              :tabs [{:id :tropes :label "Tropes"} {:id :characters :label "Characters"} {:id :objects :label "Objects"}]
-                ;;              :model @edit-facet
-                ;;              :on-change #()
-                ;;              ]]]
-                ;; gap
-                ;; gap
                 (if @trope-name
                   [com/title :style {:padding-left "40px" :padding-bottom "10px"} :level :level3 :label (str "\"" (if (= (:label @trope-name) "") "<no name>" (:label @trope-name)) "\" is a trope where:")])
-                [com/h-box
-                 :justify :center
+                [com/v-box
                  :children [
                             [codemirror-inner {:text @trope-text
                                                :cursor @cursor}]
                             gap
                             [com/v-box
-                             :width "300px"
+                             :width "200px"
                              :children [
                                         [edit-trope-tabs]
                                         gap
@@ -210,7 +207,9 @@
                  :model (:id sel)
                  ;; :model nil
                  :filter-box? true
-                 :on-change #(re-frame/dispatch [:change-place n % loc])]]]))
+                 :on-change #(do
+                               (re-frame/dispatch [:change-place n % loc])
+                               (re-frame/dispatch [:generate-story]))]]]))
 
 
 (defn obj-select [type objs sel n]
@@ -252,7 +251,9 @@
                  :model (:id sel)
                  ;; :model nil
                  :filter-box? true
-                 :on-change #(re-frame/dispatch [:change-char n % role])]]]))
+                 :on-change #(do
+                               (re-frame/dispatch [:change-char n % role])
+                               (re-frame/dispatch [:generate-story]))]]]))
 
 
 (defn places [n]
@@ -261,9 +262,9 @@
         all-places (re-frame/subscribe [:places-for-locations @locs])
         our-tropes (re-frame/subscribe [:our-tropes])
         sel-places (:places (nth @our-tropes n))
-        p (println "PLACES: ")
+        ;; p (println "PLACES: ")
         triples (map vector (set @locs) (set @all-places) sel-places)
-        p (println triples)
+        ;; p (println triples)
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
         ]
@@ -283,9 +284,9 @@
         all-objs (re-frame/subscribe [:objs-for-types @types])
         our-tropes (re-frame/subscribe [:our-tropes])
         sel-objs (:objects (nth @our-tropes n))
-        p (println "OBJS: ")
+        ;; p (println "OBJS: ")
         triples (map vector (set @types) (set @all-objs) sel-objs)
-        p (println triples)
+        ;; p (println triples)
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
         ]
@@ -309,9 +310,9 @@
         ;; s-chars (if (nil? sel-chars) (take (count @archetypes) (repeat nil)) sel-chars)
         ;; chars (if @subverted (reverse @all-chars) @all-chars)
         ;; p (println chars)
-        p (println "ROLES: ")
+        ;; p (println "ROLES: ")
         triples (map vector (set @roles) (set @all-chars) sel-chars)
-        p (println triples)
+        ;; p (println triples)
         ;; our-tropes (re-frame/subscribe [:our-tropes])
         ;; archetypes (:archetypes (nth @our-tropes n))
         ]
@@ -336,7 +337,7 @@
                 [com/v-box
                  :children [
                             [com/single-dropdown
-                             :width "300px"
+                             :width "250px"
                              :choices @all-tropes
                              :model (:id (nth @our-tropes n))
                              :filter-box? true
@@ -345,6 +346,7 @@
 
                             ;; [save-trope-button]
                             ]]]]))
+
 
 
 
@@ -375,8 +377,8 @@
   (let [
         subverted (re-frame/subscribe [:subverted? n])
         roles (re-frame/subscribe [:roles n])
-        p (println "NTH: ")
-        p (println n)
+        ;; p (println "NTH: ")
+        ;; p (println n)
         ]
     [com/v-box
      :style (if @subverted {:background-color "#ffdddd" :border "#ff9999 solid 2px"}
@@ -385,7 +387,7 @@
      :padding "10px"
      :children [[trope-select n]
                 gap
-                [com/h-box
+                [com/v-box
                  :children [
                             [characters n]
                             gap
@@ -397,10 +399,10 @@
                 [com/h-box
                  :justify :center
                  :children [
-                            (if (> (count @roles) 1)
-                              [subvert-trope n])
-                            (if (and (> n 0) (> (count @roles) 1))
-                              gap)
+                            ;; (if (> (count @roles) 1)
+                            ;;   [subvert-trope n])
+                            ;; (if (and (> n 0) (> (count @roles) 1))
+                            ;;   gap)
                             (if (> n 0)
                               [remove-trope n])
                             ]]
@@ -429,18 +431,24 @@
    :children [
               [com/v-box
                :margin "50px"
-               :width "725px"
+               :width "300px"
                :children [
                           [trope-boxes]
                           [add-trope]
                           ]]]])
 
 
+
 (defn arrange-tab []
   (let [our-tropes (re-frame/subscribe [:our-tropes])]
     (do
       (if (empty? @our-tropes) (re-frame/dispatch [:add-trope]))
-      [trope-content])))
+      [com/scroller
+       :v-scroll :auto
+       :height "800px"
+
+       :child
+       [trope-content]])))
 
 ;; again, just the first event
 (defn index->event
@@ -458,20 +466,21 @@
 ;; my encoding here is a _little_ fragile (based on decimal numbers)!
 ;; will want [events data] to prepend previous events
 (defn data->graph [data]
-  (loop [answer-sets data as-num 1 nodes [{:id 0 :label "now" :level 0 :color "#FF3333"}] edges []]
+  (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
     (if (empty? answer-sets) {:nodes nodes :edges edges}
         (let [options
               (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-id 0]
                 (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
-                    (let [event (first (:observed (first time-step))) ; NOTE: this is just the FIRST event
+                    (let [event (first (remove #(= (apply str (take 3 (:event %))) "int") (:occurred (first time-step)))) ; NOTE: this is just the FIRST event
                           label (str (:event event) " " (apply str (interpose " " (:params event))))
                           peers (filter #(= (:level %) ts-num) nodes)
                           ;; unique (if (seq (filter #(= (:label %) label) peers)) false true)
                           peer-id (:id (first (filter #(= (:label %) label) peers)))
                           linked (seq (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
                           this-id (if-not linked (int (gensym "")) peer-id)
-                          e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-                          n (merge {:label label :id this-id :level ts-num :event event} (if (> ts-num 1) {:color "#dddddd" :font {:color "#999999"}} {}))]
+                          ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
+                          e (merge {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}})
+                          n (merge {:label label :id this-id :level ts-num :event event})]
                       (if-not linked
                         (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
                         (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
@@ -480,6 +489,7 @@
   )
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
+
 
 (defn vis-inner []
    (let [visi (atom nil)
@@ -505,7 +515,7 @@
                                     network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))
                                     ]
                                 (do
-                                  (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))
+                                  ;; (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))
                                   (.on network "selectNode"  #(re-frame/dispatch [:story-action (index->event (js/parseInt (first (get (js->clj %) "nodes"))))]))
                                   (reset! visi {:network network})))
                               (update comp))
@@ -592,7 +602,7 @@
                             [com/title :label "Player character:" :level :level3]
                             gap
                             [com/single-dropdown
-                             :width "300px"
+                             :width "200px"
                              :choices info
                              :placeholder "(Random selection)"
                              :model @player
@@ -656,57 +666,10 @@
 (defn play-tab []
   (let [
         story-graph (re-frame/subscribe [:story-sets])
-        ;; story-graph (re-frame/subscribe [:story-graph])
-        ;; graph  [; answer set
-        ;;         [; time step
-        ;;          {:observed [{:event "go"
-        ;;                       :params ["south"]
-        ;;                       :inst "Hero's Journey"}]
-        ;;           :fluents []}
-        ;;          {:observed [{:event "run"
-        ;;                       :params ["away"]
-        ;;                       :inst "Hero's Journey"}]
-        ;;           :fluents []}
-        ;;          ]
-        ;;         [; time step
-        ;;          {:observed [{:event "take"
-        ;;                       :params ["sword"]
-        ;;                       :inst "Hero's Journey"}]
-        ;;           :fluents []}]
-        ;;         [; time step
-        ;;          {:observed [{:event "go"
-        ;;                       :params ["north"]
-        ;;                       :inst "Evil Empire"}]
-        ;;           :fluents []}
-        ;;          {:observed [{:event "kill"
-        ;;                       :params ["hero"]
-        ;;                       :inst "Evil Empire"}]
-        ;;           }
-        ;;          ]
-        ;;         ]
         ]
     [com/v-box
      :children
      [
-      ;; [d3-inner @story-graph]
-      ;; [com/h-box
-      ;;  :justify :center
-      ;;  :children [
-      ;;             ;; [d3-inner [{:cx 100 :cy 100 :r 100 :fill "red"}]]]
-      ;;             ;; [d3-inner {:nodes [
-      ;;             ;;                    {:name "Now" :index 0}
-      ;;             ;;                    {:name "Land of Glory" :index 1}
-      ;;             ;;                    {:name "3" :index 2}
-      ;;             ;;                    {:name "4" :index 3}]
-      ;;             ;;            :links [
-      ;;             ;;                    {:source 0 :target 1 :name "link1"}
-      ;;             ;;                    {:source 0 :target 2 :name "link2"}
-      ;;             ;;                    {:source 1 :target 3 :name "link3"}
-      ;;             ;;                    {:source 3 :target 2 :name "link4"}
-      ;;             ;;                    ]}]]
-
-      ;;             [vis-inner graph]]
-      ;;  ]
       (if-not @story-graph
         [com/h-box
          :justify :center
@@ -715,9 +678,7 @@
                     [com/v-box
                      :children [
                                 [player-select]
-                                gap
                                 [lookahead]
-                                gap
                                 [com/h-box
                                  :justify :center
                                  :children [
@@ -726,11 +687,9 @@
          :children [
                     [com/h-box
                      :justify :center
-                     :padding "40px 60px"
+                     :padding "20px 30px"
                      :children [
                                 [lookahead]
-                                gap
-                                gap
                                 gap
                                 gap
                                 [player-select]
@@ -744,22 +703,6 @@
                      ]
                     [vis-inner {:graph @story-graph}]
                     ]]
-        ;; [com/v-box
-        ;;  :children [
-        ;;             [com/h-box
-        ;;              :padding "20px 0px 0px 210px"
-        ;;              :children [
-        ;;                         [com/label
-        ;;                          :label "What next?"
-        ;;                          :style {:font-size "small"}]]]
-        ;;             spacer
-        ;;             [action-boxes]
-        ;;             [com/h-box
-        ;;              :justify :center
-        ;;              :padding "40px 60px"
-        ;;              :children [
-        ;;                         [output]]]
-        ;;             ]]
         )
       ]]))
 
@@ -776,7 +719,6 @@
     (case @current-tab
       :tab1 [edit-tab]
       :tab2 [arrange-tab]
-      :tab3 [play-tab]
       gap)))
 
 
@@ -799,10 +741,18 @@
     (let [error (re-frame/subscribe [:error])]
       [com/v-box
        :height "100%"
-       :children [[title]
-                  [tabs]
-                  [content]
-                  (when @error
-                    [error-dialog @error]
-                    )
+       :children [
+                  [title]
+                  [com/h-box
+                   :children [
+                              [com/v-box
+                               :width "30%"
+                               :children [
+                                          [tabs]
+                                          [content]
+                                          (when @error
+                                            [error-dialog @error]
+                                            )]]
+                              [play-tab]
+                              ]]
                   ]])))

@@ -12,6 +12,8 @@
 (get-events-for-story (last (map :story-id (get-events))))
 (get-tropes-for-story (last (map :story-id (get-events))))
 
+
+
 (parse-trope "\"The Hero's Journey\" is a trope where:\n    The Hero is at Home\n  Then the Hero goes away\n    Or the Hero kill the Villain")
 
 (let [id (last (map :story-id (get-events)))]
@@ -58,7 +60,12 @@
               :objects ["Weapon"]})
   )
 
-(get-tropes)
+
+(:source (first (get-tropes)))
+(parse-trope "\"The Hero's Journey\" is a trope where:\n  The Hero is at Home\n  Then the Hero goes Away\n    Or the Hero kills the Villain")
+(make-map (parse-trope "\"The Hero's Journey\" is a trope where:\n  The Hero is at Home\n  Then the Hero goes Away\n    Or the Hero kills the Villain"))
+(parse-trope (:source (first (get-tropes))))
+
 (reset-collection! "tropes")
 
 (do
