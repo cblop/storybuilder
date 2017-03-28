@@ -465,7 +465,8 @@
                                            ;; :player @player
                                            :player (first (:params event))
                                            :verb (:event event)
-                                           :lookahead @lookahead
+                                           ;; :lookahead @lookahead
+                                           :lookahead 5 ; ignore
                                            ;; :object-a (first (:params event))
                                            :object-a (if (second (:params event)) (second (:params event)) nil)
                                            :object-b (if (> (count (:params event)) 2) (nth (:params event) 2) nil)}
@@ -493,7 +494,8 @@
                                            :story-id @story-id
                                            :player @player
                                            :verb @verb
-                                           :lookahead @lookahead
+                                           ;; :lookahead @lookahead
+                                           :lookahead 5 ; ignoring
                                            :object-a @object-a
                                            :object-b @object-b}
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
@@ -516,7 +518,9 @@
 (re-frame/register-handler
  :change-lookahead
  (fn [db [_ la]]
-   (assoc db :lookahead la)))
+   ;; (assoc db :lookahead la)
+   db ;; ignore
+   ))
 
 (re-frame/register-handler
  :generate-story
@@ -539,7 +543,8 @@
                                                    :characters @our-characters
                                                    :objects @our-objects
                                                    :places @our-places
-                                                   :lookahead @lookahead
+                                                   ;; :lookahead @lookahead
+                                                   :lookahead 5 ; ignore
                                                    :player @player}
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])

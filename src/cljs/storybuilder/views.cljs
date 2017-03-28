@@ -438,7 +438,6 @@
                           ]]]])
 
 
-
 (defn arrange-tab []
   (let [our-tropes (re-frame/subscribe [:our-tropes])]
     (do
@@ -463,7 +462,6 @@
 
 ;; move this to handlers.cljs
 ;; don't forget: you _could_ have multiple events in each timestep!
-;; my encoding here is a _little_ fragile (based on decimal numbers)!
 ;; will want [events data] to prepend previous events
 (defn data->graph [data]
   (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
@@ -481,7 +479,7 @@
                           ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
                           e (merge {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}})
                           n (merge {:label label :id this-id :level ts-num :event event})]
-                      (if-not linked
+                      (if (and event (not linked))
                         (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
                         (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
                         ))))]
