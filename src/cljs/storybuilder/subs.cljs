@@ -215,6 +215,11 @@
    (reaction (:story-sets @db))))
 
 (re-frame/register-sub
+ :compiling
+ (fn [db _]
+   (reaction (:compiling @db))))
+
+(re-frame/register-sub
  :story-text
  (fn [db _]
    (do

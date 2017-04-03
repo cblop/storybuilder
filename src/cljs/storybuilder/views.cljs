@@ -138,8 +138,11 @@
    :on-click #(do
                 (re-frame/dispatch-sync [:parse-trope])
                 (re-frame/dispatch-sync [:load-tropes])
+                (re-frame/dispatch-sync [:compiling true])
                 (sleep 100)
+                (re-frame/dispatch-sync [:refresh-trope])
                 (re-frame/dispatch-sync [:generate-story])
+                (re-frame/dispatch-sync [:compiling false])
                 )])
 
 
@@ -341,7 +344,12 @@
                              :choices @all-tropes
                              :model (:id (nth @our-tropes n))
                              :filter-box? true
-                             :on-change #(re-frame/dispatch [:change-trope n %])]
+                             :on-change #(do (re-frame/dispatch-sync [:change-trope n %])
+                                             (re-frame/dispatch-sync [:compiling true])
+                                             (re-frame/dispatch-sync [:generate-blanks])
+                                             (re-frame/dispatch-sync [:reset-vis])
+                                             (re-frame/dispatch-sync [:compiling false])
+                                             )]
                             ;; gap
 
                             ;; [save-trope-button]
@@ -464,27 +472,29 @@
 ;; don't forget: you _could_ have multiple events in each timestep!
 ;; will want [events data] to prepend previous events
 (defn data->graph [data]
-  (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
-    (if (empty? answer-sets) {:nodes nodes :edges edges}
-        (let [options
-              (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-id 0]
-                (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
-                    (let [event (first (remove #(= (apply str (take 3 (:event %))) "int") (:occurred (first time-step)))) ; NOTE: this is just the FIRST event
-                          label (str (:event event) " " (apply str (interpose " " (:params event))))
-                          peers (filter #(= (:level %) ts-num) nodes)
-                          ;; unique (if (seq (filter #(= (:label %) label) peers)) false true)
-                          peer-id (:id (first (filter #(= (:label %) label) peers)))
-                          linked (seq (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
-                          this-id (if-not linked (int (gensym "")) peer-id)
-                          ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-                          e (merge {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}})
-                          n (merge {:label label :id this-id :level ts-num :event event})]
-                      (if (and event (not linked))
-                        (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
-                        (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
-                        ))))]
-          (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))
-  )
+  (let [graph
+        (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
+          (if (empty? answer-sets) {:nodes nodes :edges edges}
+              (let [options
+                    (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-id 0]
+                      (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
+                          (let [event (first (remove #(= (apply str (take 3 (:event %))) "int") (:occurred (first time-step)))) ; NOTE: this is just the FIRST event
+                                label (str (:event event) " " (apply str (interpose " " (:params event))))
+                                peers (filter #(= (:level %) ts-num) nodes)
+                                ;; unique (if (seq (filter #(= (:label %) label) peers)) false true)
+                                peer-id (:id (first (filter #(= (:label %) label) peers)))
+                                linked (seq (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
+                                this-id (if-not linked (int (gensym "")) peer-id)
+                                ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
+                                e (merge {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}})
+                                n (merge {:label label :id this-id :level ts-num :event event})]
+                            (if (and event (not linked))
+                              (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
+                              (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
+                              ))))]
+                (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))]
+    (if (= (count (:nodes graph)) 1) (assoc-in graph [:nodes 0] {:id 0 :label "COMPILE ERROR" :level 0 :color "#ffffff" :shape "text"}) graph)
+  ))
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 
@@ -495,7 +505,7 @@
                   (let [graph (data->graph (:graph (reagent/props comp)))]
                     (do
                       (re-frame/dispatch [:update-graph graph])
-                      (println (str "COMP: " (:graph (reagent/props comp))))
+                      ;; (println (str "COMP: " (:graph (reagent/props comp))))
                       (.setData (:network @visi) (clj->js graph))
                       (.redraw (:network @visi))
                       )))]
@@ -514,7 +524,7 @@
                                     ]
                                 (do
                                   ;; (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))
-                                  (.on network "selectNode"  #(re-frame/dispatch [:story-action (index->event (js/parseInt (first (get (js->clj %) "nodes"))))]))
+                                  ;; (.on network "selectNode"  #(re-frame/dispatch [:story-action (index->event (js/parseInt (first (get (js->clj %) "nodes"))))]))
                                   (reset! visi {:network network})))
                               (update comp))
        :component-did-update update
@@ -664,44 +674,49 @@
 (defn play-tab []
   (let [
         story-graph (re-frame/subscribe [:story-sets])
+        compiling (re-frame/subscribe [:compiling])
         ]
     [com/v-box
      :children
      [
-      (if-not @story-graph
-        [com/h-box
-         :justify :center
-         :padding "40px 60px"
-         :children [
-                    [com/v-box
-                     :children [
-                                [player-select]
-                                [lookahead]
-                                [com/h-box
-                                 :justify :center
-                                 :children [
-                                            [go-button]]]]]]]
-        [com/v-box
-         :children [
-                    [com/h-box
-                     :justify :center
-                     :padding "20px 30px"
-                     :children [
-                                [lookahead]
-                                gap
-                                gap
-                                [player-select]
-                                gap
-                                gap
-                                [com/button
-                                 :label "Reset Story"
-                                 :class "btn-danger"
-                                 :on-click #(re-frame/dispatch [:reset-vis])]
-                                ]
-                     ]
-                    [vis-inner {:graph @story-graph}]
-                    ]]
-        )
+      (if @story-graph
+        (if @compiling
+          [com/label "Compiling..."]
+          [vis-inner {:graph @story-graph}]))
+      ;; (if-not @story-graph
+      ;;   [com/h-box
+      ;;    :justify :center
+      ;;    :padding "40px 60px"
+      ;;    :children [
+      ;;               [com/v-box
+      ;;                :children [
+      ;;                           [player-select]
+      ;;                           [lookahead]
+      ;;                           [com/h-box
+      ;;                            :justify :center
+      ;;                            :children [
+      ;;                                       [go-button]]]]]]]
+      ;;   [com/v-box
+      ;;    :children [
+      ;;               [com/h-box
+      ;;                :justify :center
+      ;;                :padding "20px 30px"
+      ;;                :children [
+      ;;                           [lookahead]
+      ;;                           gap
+      ;;                           gap
+      ;;                           [player-select]
+      ;;                           gap
+      ;;                           gap
+      ;;                           [com/button
+      ;;                            :label "Reset Story"
+      ;;                            :class "btn-danger"
+      ;;                            :on-click #(re-frame/dispatch [:reset-vis])]
+      ;;                           ]
+      ;;                ]
+      ;;               [vis-inner {:graph @story-graph}]
+      ;;               ]]
+      ;;   )
       ]]))
 
 

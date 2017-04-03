@@ -1,0 +1,9 @@
+* StoryBuilder Plan
+** DONE display message on no nodes
+   CLOSED: [2017-03-30 Thu 09:51]
+** DONE change start node to beginning
+   CLOSED: [2017-03-30 Thu 10:26]
+** TODO recompile on trope edit
+** DONE generate randoms instead of nil chars, objs, places on trope select
+   CLOSED: [2017-03-31 Fri 12:11]
+** TODO tropic: bridge insts

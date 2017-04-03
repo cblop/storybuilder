@@ -45,8 +45,8 @@
 (re-frame/register-handler
  :storygen-handler
  (fn [db [_ response]]
-   (println "RESPONSE:")
-   (println response)
+   ;; (println "RESPONSE:")
+   ;; (println response)
    ;; (re-frame/dispatch [:story-event])
    ;; (assoc (assoc db :story-id (:id response)) :story-text (clojure.string/split-lines (:text response)))
    (assoc (assoc db :story-id (:id response)) :story-sets (:sets response))
@@ -369,6 +369,41 @@
         ]
     (map #(vector % (nth types %)) indices)))
 
+(defn blank-char [role]
+  {:id role :label role :role role})
+
+(defn blank-object [type]
+  {:id type :label type :type type})
+
+(defn blank-place [loc]
+  {:id loc :label loc :location loc})
+
+(re-frame/register-handler
+ :generate-blanks
+ (fn [db _]
+   (let [our-tropes (re-frame/subscribe [:our-tropes])
+         nil-roles (keep-indexed #(vector %1 (nil-types (:characters %2) :roles (:id %2))) @our-tropes)
+         nil-objects (keep-indexed #(vector %1 (nil-types (:objects %2) :objects (:id %2))) @our-tropes)
+         nil-places (keep-indexed #(vector %1 (nil-types (:places %2) :locations (:id %2))) @our-tropes)
+         ]
+     (do
+       (doseq [nrs nil-roles]
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-char (first nrs) (first nss) (blank-char (second nss))])))
+
+       (doseq [nrs nil-objects]
+         (if-not (empty? (second nrs))
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-obj (first nrs) (first nss) (blank-object (second nss))]))))
+
+       (doseq [nrs nil-places]
+         (if-not (empty? (second nrs))
+           (doseq [nss (second nrs)]
+             (re-frame/dispatch [:change-nil-place (first nrs) (first nss) (blank-place (second nss))]))))
+       db)
+     )
+     ))
+
 (re-frame/register-handler
  :generate-randoms
  (fn [db _]
@@ -466,7 +501,7 @@
                                            :player (first (:params event))
                                            :verb (:event event)
                                            ;; :lookahead @lookahead
-                                           :lookahead 5 ; ignore
+                                           :lookahead 10 ; ignore
                                            ;; :object-a (first (:params event))
                                            :object-a (if (second (:params event)) (second (:params event)) nil)
                                            :object-b (if (> (count (:params event)) 2) (nth (:params event) 2) nil)}
@@ -489,13 +524,14 @@
          lookahead (re-frame/subscribe [:lookahead])
          ]
      (do
+       ;; (re-frame/dispatch [:generate-randoms])
        (POST (str host "/stories/event") {:params
                                           {:id @story-id
                                            :story-id @story-id
                                            :player @player
                                            :verb @verb
                                            ;; :lookahead @lookahead
-                                           :lookahead 5 ; ignoring
+                                           :lookahead 10 ; ignoring
                                            :object-a @object-a
                                            :object-b @object-b}
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
@@ -537,14 +573,24 @@
          story {:storyname "story"
                 :tropes (map :label @our-tropes)
                 :instances (concat role-pairs obj-pairs place-pairs)
-                }]
+                }
+         p (println "REQUEST:")
+         p (println {:story story
+                      :tropes @our-tropes
+                      :characters (remove nil? @our-characters)
+                      :objects (remove nil? @our-objects)
+                      :places (remove nil? @our-places)
+                      ;; :lookahead @lookahead
+                      :lookahead 10 ; ignore
+                      :player @player})
+         ]
      (do (POST (str host "/stories/new") {:params {:story story
                                                    :tropes @our-tropes
-                                                   :characters @our-characters
-                                                   :objects @our-objects
-                                                   :places @our-places
+                                                   :characters (remove nil? @our-characters)
+                                                   :objects (remove nil? @our-objects)
+                                                   :places (remove nil? @our-places)
                                                    ;; :lookahead @lookahead
-                                                   :lookahead 5 ; ignore
+                                                   :lookahead 10 ; ignore
                                                    :player @player}
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])
@@ -564,6 +610,17 @@
     (str ermsg sorry)
     ))
 
+(re-frame/register-handler
+ :refresh-trope
+ (fn [db _]
+   (do
+     (let [editing (:editing-trope db)
+           n (.indexOf (to-array (map :id (:our-tropes db))) editing)]
+       (re-frame/dispatch [:change-trope n editing]))
+     (re-frame/dispatch [:generate-blanks])
+     ;; (re-frame/dispatch [:reset-vis])
+     db
+     )))
 
 (re-frame/register-handler
  :parse-trope
@@ -573,6 +630,11 @@
      db
      )
    ))
+
+(re-frame/register-handler
+ :compiling
+ (fn [db [_ value]]
+   (assoc db :compiling value)))
 
 (re-frame/register-handler
  :initialize-db

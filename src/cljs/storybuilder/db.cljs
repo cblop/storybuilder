@@ -9,6 +9,7 @@
    :current-tab :tab1
    :edit-trope-tab :edit
    :editing-trope nil
+   :compiling false
    :edit-facet :tropes
    :error nil
    :success nil
