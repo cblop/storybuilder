@@ -5,6 +5,13 @@
 (def db (re-frame/subscribe [:db]))
 
 
+(def evs (mapcat (partial mapcat :occurred) (:story-sets @db)))
+(def evlist (map (partial map :occurred) (:story-sets @db)))
+
+(filter :viol evs)
+
+(filter #(and (= (:inst %) "evilEmpire") (= (:event %) "go")) evs)
+
 ;; before
 (:our-tropes @db)
 ;; => [{:id "58c2ae7f5d2a01351e4fab0f", :label "The Hero's Journey", :events [{:place "Home", :verb "go", :role "Hero"} {:or [{:place "Away", :verb "go", :role "Hero"} {:role-b "Villain", :role-a "Hero", :verb "kill"}]} {:or [{:place "Home", :verb "go", :role "Hero"} {:role-b "Villain", :role-a "Mentor", :verb "kill"}]}], :subverted false, :places [{:id "Away", :label "Away", :location "Away"} {:id "Home", :label "Home", :location "Home"}], :objects [], :characters [{:id "Hero", :label "Hero", :role "Hero"} {:id "Mentor", :label "Mentor", :role "Mentor"} {:id "Villain", :label "Villain", :role "Villain"}]}]
@@ -16,6 +23,8 @@
 ;; => [{:id "58c2ae7f5d2a01351e4fab0f", :label "The Hero's Journey", :events [{:place "Home", :verb "go", :role "Hero"} {:or [{:place "Away", :verb "go", :role "Hero"} {:role-b "Villain", :role-a "Hero", :verb "kill"}]} {:or [{:place "Home", :verb "go", :role "Hero"} {:role-b "Villain", :role-a "Mentor", :verb "kill"}]}], :subverted false, :places [{:id "Away", :label "Away", :location "Away"} {:id "Home", :label "Home", :location "Home"}], :objects [], :characters [{:id "Hero", :label "Hero", :role "Hero"} {:id "Mentor", :label "Mentor", :role "Mentor"} {:id "Villain", :label "Villain", :role "Villain"}]}]
 (:tropes @db)
 ;; => [{:source "The Villain may go Away\nThen the Villain kills the Hero", :situations [], :events [{:permission {:place "Away", :verb "go", :role "Villain"}} {:role-b "Hero", :verb "kill", :role "Villain"}], :locations ["Away"], :objects [], :roles ["Hero" "Villain"], :label "Evil Empire", :id "58c2ab975d2a01351e4fab0d"} {:source "", :situations [], :events [], :locations [], :objects [], :roles [], :label "Chekov's Gun", :id "58c2ab975d2a01351e4fab0e"} {:source "The Hero is at Home\nThen the Hero goes Away\n  Or the Hero kills the Villain\nThen the Hero goes Home\n  Or the Villain kills the Hero\n  Or the Mentor kills the Villain", :situations [], :events [{:place "Home", :verb "go", :role "Hero"} {:or [{:place "Away", :verb "go", :role "Hero"} {:role-b "Villain", :role-a "Hero", :verb "kill"}]} {:or [{:place "Home", :verb "go", :role "Hero"} {:role-b "Hero", :role-a "Villain", :verb "kill"} {:role-b "Villain", :role-a "Mentor", :verb "kill"}]}], :locations ["Away" "Home"], :objects [], :roles ["Hero" "Mentor" "Villain"], :label "The Hero's Journey", :id "58c2ae7f5d2a01351e4fab0f"}]
+
+(first (:story-sets @db))
 
 (re-frame/dispatch [:load-tropes])
 (:editing-trope @db)
