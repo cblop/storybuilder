@@ -9,6 +9,8 @@
 (def evlist (map (partial map :occurred) (:story-sets @db)))
 
 (filter :viol evs)
+(map #(:inst (:event %)) evs)
+(map :inst evs)
 
 (filter #(and (= (:inst %) "evilEmpire") (= (:event %) "go")) evs)
 
