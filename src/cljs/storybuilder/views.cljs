@@ -476,6 +476,22 @@
   [graph]
   (let [parts (partition-by :level (:nodes graph))]))
 
+(defn color-edge
+  "sorry for the american spelling"
+  [data inst]
+  (let [
+        insts (into [] (remove nil? (set (map :inst (mapcat :occurred (apply concat data))))))
+        sorted (sort insts)]
+    (cond
+      (= inst (nth sorted 0)) "#3333FF"
+      (= inst (nth sorted 1)) "#FF3333"
+      (= inst (nth sorted 2)) "#33FF33"
+      (= inst (nth sorted 3)) "#FF33FF"
+      (= inst (nth sorted 4)) "#FFFF33"
+      (= inst (nth sorted 5)) "#33FFFF"
+      :else "#3333FF"
+          )))
+
 ;; move this to handlers.cljs
 ;; don't forget: you _could_ have multiple events in each timestep!
 ;; will want [events data] to prepend previous events
@@ -500,8 +516,9 @@
                                 ;; p (if-not linked (println (:from (first peers))))
                                 this-id (if-not linked (int (gensym "")) peer-id)
                                 ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-                                e (if linked (assoc (apply merge (map :edges peers)) :to this-id) {:from prev-id :to this-id :label (:inst event) :font {:align "bottom"}})
-                                n (if linked (assoc (apply merge (map :nodes peers)) :id this-id) {:label label :id this-id :level ts-num :event event :prev prev-id})]
+                                e (if linked (assoc (apply merge (map :edges peers)) :to this-id) {:from prev-id :to this-id :label (:inst event) :color (color-edge data (:inst event)) :font {:align "bottom"}})
+                                n (if linked (assoc (apply merge (map :nodes peers)) :id this-id) {:label label :id this-id :level ts-num :event event :prev prev-id})
+                                ]
                             (if (and event (not linked))
                               (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
                               (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
@@ -629,7 +646,7 @@
                                                                                :nodeDistance 180}}
                                              :layout {:hierarchical {:direction "LR"}}
                                              }
-                                    network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "brap"}] :edges []}) (clj->js options))
+                                    network (js/vis.Network. container (clj->js {:nodes [{:id 0 :label "ERROR"}] :edges []}) (clj->js options))
                                     ]
                                 (do
                                   ;; (println (str "COMP0: " (prn-str (:graph (reagent/props comp)))))

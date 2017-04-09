@@ -1,0 +1,26 @@
+institution greeting;
+
+type Person;
+
+exogenous event enterroom(Person);
+exogenous event wave(Person);
+exogenous event timepassed;
+
+inst event arrives(Person);
+inst event greetsroom(Person);
+inst event socialdeadline;
+
+violation event rude(Person);
+
+fluent in_room(Person);
+
+obligation fluent obl(greetsroom(Person), socialdeadline, rude(Person));
+
+enterroom(A) generates arrives(A);
+wave(A) generates greetsroom(A);
+timepassed generates socialdeadline;
+
+arrives(A) initiates in_room(A), obl(greetsroom(A),socialdeadline,rude(A)), perm(wave(A)), pow(greetsroom(A)), perm(greetsroom(A));
+arrives(A) terminates perm(arrives(A));
+
+greetsroom(A) terminates perm(greetsroom(A));

@@ -1,0 +1,20 @@
+bridge landSeaBridge;
+source sea;
+sink land;
+
+cross fluent ipow(sea, present(Port, Boat), land);
+cross fluent tpow(sea, present(Port, Boat), land);
+cross fluent gpow(sea, ex_sell(Port, Boat, Good), land);
+cross fluent ipow(sea, in_distress(Boat), land);
+
+arrive(B, P) xinitiates present(P, B);
+leave(B, P) xterminates present(P, B);
+
+distress(B) xinitiates in_distress(B);
+
+buy(B, P, G) xgenerates ex_sell(P, B, G);
+
+initially ipow(sea, present(P, B), land);
+initially tpow(sea, present(P, B), land);
+initially gpow(sea, ex_sell(P, B, G), land);
+initially ipow(sea, in_distress(B), land);

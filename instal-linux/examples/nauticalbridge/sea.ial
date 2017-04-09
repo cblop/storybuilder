@@ -1,0 +1,35 @@
+institution sea;
+
+type Boat;
+type Port;
+type Good;
+
+exogenous event ex_arrive(Boat, Port);
+exogenous event ex_leave(Boat, Port);
+exogenous event ex_flares(Boat);
+exogenous event ex_shop(Boat, Port, Good);
+
+inst event arrive(Boat, Port);
+inst event leave(Boat, Port);
+inst event distress(Boat);
+inst event buy(Boat, Port, Good);
+
+ex_arrive(B, P) generates arrive(B, P);
+ex_leave(B, P) generates leave(B, P);
+ex_flares(B) generates distress(B);
+ex_shop(B, P, G) generates buy(B, P, G);
+
+initially perm(ex_arrive(B, P));
+initially perm(ex_leave(B, P));
+initially perm(ex_flares(B));
+initially perm(ex_shop(B,P,G));
+
+initially perm(arrive(B, P));
+initially perm(leave(B, P));
+initially perm(distress(B));
+initially perm(buy(B, P, G));
+
+initially pow(arrive(B, P));
+initially pow(leave(B, P));
+initially pow(distress(B));
+initially pow(buy(B, P, G));
