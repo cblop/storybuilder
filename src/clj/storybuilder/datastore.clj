@@ -1,5 +1,6 @@
 (ns storybuilder.datastore
-  (:require [tropic.solver :refer [make-story solve-story]]
+  (:require [tropic.solver :refer [make-story solve-story trope-map]]
+            [tropic.instal :refer [event-name]]
             [tropic.parser :refer [parse-trope]]
             [tropic.gen  :refer [make-map]]
             [clojure.string :as str]
@@ -60,14 +61,14 @@
 
 (defn make-trope [data]
   (let [new-trope (str "\"" (:label data) "\"" " is a trope where:\n" (add-whitespace (:source data)))
-        parsed-trope (parse-trope new-trope)
-        tmap (make-map parsed-trope)]
+        ;; parsed-trope (parse-trope new-trope)
+        tmap (trope-map new-trope)]
     (println "TMAP:")
     (println tmap)
     ;; (assoc data :trope (:trope tmap) :roles (:roles (:trope tmap)) :locations (:locations (:trope tmap))) :objects (:objects (:trope tmap))
     ;; (assoc data :trope (:trope tmap))
     ;; (assoc (merge data tmap) :roles (:roles (:trope tmap)) :locations (:locations (:trope tmap)) :objects (:objects (:trope tmap)))
-    (assoc (:trope tmap) :id (:id tmap) :source (:source data))
+    (assoc tmap :id (:id tmap) :source (:source data))
     ))
 
 (defn new-trope [data]
@@ -103,7 +104,7 @@
       ;; (make-story (assoc data :tropes (map get-trope-by-id (:tropes data))))
       (println "NEW STORY")
       (spit "resources/debug-out.txt" (make-story data (str id) (:lookahead data) (:limit data)))
-      (make-story data (str id) (:lookahead data) (:limit data))
+      (make-story (assoc data :starters (map event-name (:starters data))) (str id) (:lookahead data) (:limit data))
       ;; {:id (str id) :text "Testing..."}
       )))
 

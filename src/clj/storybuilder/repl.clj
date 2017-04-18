@@ -22,6 +22,10 @@
    (get-tropes-for-story id)
    (get-events-for-story id)))
 
+(get-tropes)
+
+(reset-collection! "tropes")
+
 (count (get-events))
 (count (get-stories))
 (:id (first (get-stories)))

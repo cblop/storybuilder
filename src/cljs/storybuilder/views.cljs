@@ -121,30 +121,47 @@
                 ]]))
 
 
+(defn sleep [msec]
+  (let [deadline (+ msec (.getTime (js/Date.)))]
+    (while (> deadline (.getTime (js/Date.))))))
+
 
 (defn delete-trope-button []
   [com/button
    :label "Delete"
    :class "btn-danger"
-   :on-click #(re-frame/dispatch [:delete-trope])])
-
-(defn sleep [msec]
-  (let [deadline (+ msec (.getTime (js/Date.)))]
-    (while (> deadline (.getTime (js/Date.))))))
+   :on-click #(do (re-frame/dispatch [:delete-trope])
+                  (re-frame/dispatch-sync [:parse-trope])
+                  (re-frame/dispatch-sync [:load-tropes])
+                  (re-frame/dispatch-sync [:compiling true])
+                  (sleep 100)
+                  (re-frame/dispatch-sync [:refresh-trope])
+                  (re-frame/dispatch-sync [:generate-story])
+                  (re-frame/dispatch-sync [:compiling false])
+                  )])
 
 (defn save-trope-button []
-  [com/button
-   :label "Save Trope"
-   :class "btn-primary"
-   :on-click #(do
-                (re-frame/dispatch-sync [:parse-trope])
-                (re-frame/dispatch-sync [:load-tropes])
-                (re-frame/dispatch-sync [:compiling true])
-                (sleep 100)
-                (re-frame/dispatch-sync [:refresh-trope])
-                (re-frame/dispatch-sync [:generate-story])
-                (re-frame/dispatch-sync [:compiling false])
-                )])
+  (let [editing (re-frame/subscribe [:editing-trope])
+        our-tropes (re-frame/subscribe [:our-tropes])]
+    [com/button
+     :label "Save Trope"
+     :class "btn-primary"
+     :on-click #(do
+                  (println "CURRENT TROPES:")
+                  (println @our-tropes)
+                  (println "EDITING TROPE:")
+                  (println @editing)
+                  (re-frame/dispatch-sync [:parse-trope])
+                  (re-frame/dispatch-sync [:load-tropes])
+                  (re-frame/dispatch-sync [:compiling true])
+                  (re-frame/dispatch-sync [:reset-tropes])
+                  (re-frame/dispatch-sync [:change-trope 0 @editing])
+                  (re-frame/dispatch-sync [:generate-blanks])
+                  ;; (re-frame/dispatch-sync [:generate-story])
+                  ;; (re-frame/dispatch-sync [:refresh-trope])
+                  (re-frame/dispatch-sync [:reset-vis])
+                  (re-frame/dispatch-sync [:compiling false])
+                  )]))
 
 
 (defn edit-tab []
@@ -395,15 +412,15 @@
                  :border "2px solid #99ff99"})
      :padding "10px"
      :children [[trope-select n]
-                gap
-                [com/v-box
-                 :children [
-                            [characters n]
-                            gap
-                            [places n]
-                            gap
-                            [objects n]
-                            ]]
+                ;; gap
+                ;; [com/v-box
+                ;;  :children [
+                ;;             [characters n]
+                ;;             gap
+                ;;             [places n]
+                ;;             gap
+                ;;             [objects n]
+                ;;             ]]
                 gap
                 [com/h-box
                  :justify :center

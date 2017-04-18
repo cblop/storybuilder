@@ -11,7 +11,7 @@
 
 (def host "http://localhost:3449")
 
-(def LIMIT 0)
+(def LIMIT 100)
 (def LOOKAHEAD 5)
 
 (defn drop-nth [n coll]
@@ -203,6 +203,11 @@
       {:id (slugify pname) :random true :label pname :location loc})))
 
 (re-frame/register-handler
+ :reset-tropes
+ (fn [db _]
+     (assoc db :our-tropes [])))
+
+(re-frame/register-handler
  :change-trope
  (fn [db [_ n id]]
    (let [trope (first (filter #(= (:id %) id) (:tropes db)))
@@ -341,6 +346,8 @@
          new-trope (assoc @trope :source @trope-text)]
      (if new?
        (do
+         (println "TROPE:")
+         (println new-trope)
          (POST (str host "/tropes/new") {:params new-trope
                                           :handler #(re-frame/dispatch [:edit-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
@@ -566,7 +573,8 @@
 (re-frame/register-handler
  :generate-story
  (fn [db _]
-   (let [our-tropes (re-frame/subscribe [:our-tropes])
+   (let [all-tropes (re-frame/subscribe [:tropes])
+         our-tropes (re-frame/subscribe [:our-tropes])
          our-characters (re-frame/subscribe [:our-characters])
          our-objects (re-frame/subscribe [:our-objects])
          our-places (re-frame/subscribe [:our-places])
@@ -582,6 +590,7 @@
          p (println "REQUEST:")
          p (println {:story story
                       :tropes @our-tropes
+                      :starters (map :label @our-tropes)
                       :characters (remove nil? @our-characters)
                       :objects (remove nil? @our-objects)
                       :places (remove nil? @our-places)
@@ -592,6 +601,7 @@
          ]
      (do (POST (str host "/stories/new") {:params {:story story
                                                    :tropes @our-tropes
+                                                   :starters (map :label @our-tropes)
                                                    :characters (remove nil? @our-characters)
                                                    :objects (remove nil? @our-objects)
                                                    :places (remove nil? @our-places)
