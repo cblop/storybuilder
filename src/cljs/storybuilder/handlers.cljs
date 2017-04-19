@@ -12,7 +12,7 @@
 (def host "http://localhost:3449")
 
 (def LIMIT 100)
-(def LOOKAHEAD 5)
+(def LOOKAHEAD 10)
 
 (defn drop-nth [n coll]
   (keep-indexed #(if (not= %1 n) %2) coll))

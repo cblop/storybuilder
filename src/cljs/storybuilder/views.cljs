@@ -13,7 +13,7 @@
 ;; GENERAL
 
 (def tab-list [{:id :tab1 :label "Edit"}
-               {:id :tab2 :label "Arrange"}
+               ;; {:id :tab2 :label "Arrange"}
                ])
 
 (def spacer [com/gap :size "5px"])
@@ -50,7 +50,7 @@
      {:reagent-render (fn []
                         [com/input-textarea
                          :attr {:id "tropes-editor"}
-                         :width "300px"
+                         :width "400px"
                          :height "400px"
                          :model ""
                          :on-change #()
@@ -140,6 +140,30 @@
                   (re-frame/dispatch-sync [:compiling false])
                   )])
 
+
+(defn refresh-button []
+  (let [editing (re-frame/subscribe [:editing-trope])
+        our-tropes (re-frame/subscribe [:our-tropes])]
+    [com/button
+     :label "Refresh"
+     :class "btn-success"
+     :on-click #(do
+                  (println "CURRENT TROPES:")
+                  (println @our-tropes)
+                  (println "EDITING TROPE:")
+                  (println @editing)
+                  (re-frame/dispatch-sync [:parse-trope])
+                  (re-frame/dispatch-sync [:load-tropes])
+                  (re-frame/dispatch-sync [:compiling true])
+                  (re-frame/dispatch-sync [:reset-tropes])
+                  (re-frame/dispatch-sync [:change-trope 0 @editing])
+                  (re-frame/dispatch-sync [:generate-blanks])
+                  ;; (re-frame/dispatch-sync [:generate-story])
+                  ;; (re-frame/dispatch-sync [:refresh-trope])
+                  (re-frame/dispatch-sync [:reset-vis])
+                  (re-frame/dispatch-sync [:compiling false])
+                  )]))
+
 (defn save-trope-button []
   (let [editing (re-frame/subscribe [:editing-trope])
         our-tropes (re-frame/subscribe [:our-tropes])]
@@ -169,6 +193,7 @@
         cursor (re-frame/subscribe [:tropes-cursor-pos])
         edit-facet (re-frame/subscribe [:edit-facet])
         trope-name (re-frame/subscribe [:editing-trope-name])
+        tabid (re-frame/subscribe [:edit-trope-tab])
         error (re-frame/subscribe [:error])
         success (re-frame/subscribe [:success])
         ]
@@ -183,17 +208,24 @@
                                                :cursor @cursor}]
                             gap
                             [com/v-box
-                             :width "200px"
+                             :width "300px"
                              :children [
                                         [edit-trope-tabs]
                                         gap
                                         [com/h-box
                                          :justify :end
                                          :children [
+                                                    (if (= @tabid :edit)
+                                                      [:div
+                                                       spacer
+                                                       [delete-trope-button]])
                                                     spacer
-                                                    [delete-trope-button]
+                                                    [save-trope-button]
                                                     spacer
-                                                    [save-trope-button]]
+                                                    (if (= @tabid :edit)
+                                                      [:div
+                                                       [refresh-button]])
+                                                    ]
                                          ]
                                         gap
                                         [com/h-box

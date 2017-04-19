@@ -4,6 +4,9 @@
 
 (def db (re-frame/subscribe [:db]))
 
+(:tropes @db)
+(:our-tropes @db)
+
 (def evs (mapcat (partial mapcat :occurred) (:story-sets @db)))
 (def evlist (map (partial map :occurred) (:story-sets @db)))
 
