@@ -4,7 +4,9 @@
 ** DONE change start node to beginning
    CLOSED: [2017-03-30 Thu 10:26]
 ** TODO recompile on trope edit
+Fix it so that we don't have to click on *two* buttons
 ** DONE generate randoms instead of nil chars, objs, places on trope select
    CLOSED: [2017-03-31 Fri 12:11]
 ** TODO enforce argument order
 ** TODO tropic: bridge insts
+** TODO aggressively prune tree so that all *wanted* branches are generated

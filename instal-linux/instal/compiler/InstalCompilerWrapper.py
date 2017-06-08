@@ -34,6 +34,7 @@ class InstalCompilerWrapper(metaclass=ABCMeta):
             file = self.lp_file(save_output_file, asp, filename=b["filename"])
             instal_compiled_dictionary["bridge_asp"].append(
                 {"file": file, "contents": asp})
+            print(asp)
 
         return instal_compiled_dictionary
 

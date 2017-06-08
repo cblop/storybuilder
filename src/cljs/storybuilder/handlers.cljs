@@ -11,8 +11,8 @@
 
 (def host "http://localhost:3449")
 
-(def LIMIT 100)
-(def LOOKAHEAD 10)
+(def LIMIT 500)
+(def LOOKAHEAD 5)
 
 (defn drop-nth [n coll]
   (keep-indexed #(if (not= %1 n) %2) coll))
@@ -570,41 +570,77 @@
    db ;; ignore
    ))
 
+(defn get-subtropes [trope tropes]
+  (let [stropes (map #(if-let [s (:subtrope %)]
+                        (first (filter (fn [x] (or (= (:label x) (str "The " s)) (= (:label x) s))) tropes))
+                        nil) (:events trope))]
+    (remove nil? stropes)))
+
+(defn convert-thing [label type]
+  (hash-map :label label :id label (keyword type) label))
+
 (re-frame/register-handler
  :generate-story
  (fn [db _]
    (let [all-tropes (re-frame/subscribe [:tropes])
-         our-tropes (re-frame/subscribe [:our-tropes])
-         our-characters (re-frame/subscribe [:our-characters])
-         our-objects (re-frame/subscribe [:our-objects])
-         our-places (re-frame/subscribe [:our-places])
+         sel-tropes (re-frame/subscribe [:our-tropes])
+         sel-characters (re-frame/subscribe [:our-characters])
+         sel-objects (re-frame/subscribe [:our-objects])
+         sel-places (re-frame/subscribe [:our-places])
+         subtropes (mapcat #(get-subtropes % @all-tropes) @sel-tropes)
+         sub-chars (map #(convert-thing % :role) (mapcat :roles subtropes))
+         sub-objects (map #(convert-thing % :type) (mapcat :objects subtropes))
+         sub-places (map #(convert-thing % :location) (mapcat :locations subtropes))
+         our-tropes (into [] (set (concat subtropes @sel-tropes)))
+         our-characters (into [] (concat @sel-characters sub-chars))
+         our-places (into [] (set (concat @sel-places sub-places)))
+         our-objects (into [] (set (concat @sel-objects sub-objects)))
          ;; lookahead (re-frame/subscribe [:lookahead])
          player (re-frame/subscribe [:player])
-         role-pairs (map #(hash-map :class (:role %) :iname (:label %)) @our-characters)
-         obj-pairs (map #(hash-map :class (:type %) :iname (:label %)) @our-objects)
-         place-pairs (map #(hash-map :class (:location %) :iname (:label %)) @our-places)
+         ;; this must change if we change chars
+         role-pairs (map #(hash-map :class (:label %) :iname (:label %)) our-characters)
+         obj-pairs (map #(hash-map :class (:label %) :iname (:label %)) our-objects)
+         place-pairs (map #(hash-map :class (:label %) :iname (:label %)) our-places)
          story {:storyname "story"
-                :tropes (map :label @our-tropes)
+                :tropes (map :label our-tropes)
                 :instances (concat role-pairs obj-pairs place-pairs)
                 }
+         p (println "SELCHARS:")
+         p (println @sel-characters)
+         p (println "SUBCHARS:")
+         p (println sub-chars)
+         p (println "SELobjs:")
+         p (println @sel-objects)
+         p (println "SUBobjs:")
+         p (println sub-objects)
+         p (println "SELplaces:")
+         p (println @sel-places)
+         p (println "SUBplaces:")
+         p (println sub-places)
+         p (println "OURplaces:")
+         p (println our-places)
+         p (println "SUBTROPES:")
+         p (println subtropes)
          p (println "REQUEST:")
          p (println {:story story
-                      :tropes @our-tropes
-                      :starters (map :label @our-tropes)
-                      :characters (remove nil? @our-characters)
-                      :objects (remove nil? @our-objects)
-                      :places (remove nil? @our-places)
-                      ;; :lookahead @lookahead
-                      :lookahead LOOKAHEAD ; ignore
-                      :limit LIMIT
-                      :player @player})
+                     :tropes our-tropes
+                     :starters (map :label @sel-tropes)
+                     :start-tropes @sel-tropes
+                     :characters (remove nil? our-characters)
+                     :objects (remove nil? our-objects)
+                     :places (remove nil? our-places)
+                     ;; :lookahead @lookahead
+                     :lookahead LOOKAHEAD ; ignore
+                     :limit LIMIT
+                     :player @player})
          ]
      (do (POST (str host "/stories/new") {:params {:story story
-                                                   :tropes @our-tropes
-                                                   :starters (map :label @our-tropes)
-                                                   :characters (remove nil? @our-characters)
-                                                   :objects (remove nil? @our-objects)
-                                                   :places (remove nil? @our-places)
+                                                   :tropes our-tropes
+                                                   :starters (map :label @sel-tropes)
+                                                   :start-tropes @sel-tropes
+                                                   :characters (remove nil? our-characters)
+                                                   :objects (remove nil? our-objects)
+                                                   :places (remove nil? our-places)
                                                    ;; :lookahead @lookahead
                                                    :lookahead LOOKAHEAD ; ignore
                                                    :limit LIMIT

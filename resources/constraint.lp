@@ -1,12 +1,9 @@
 #show occurred/3.
-nullevent :- observed(null, I, T), observed(E, I, T2), T2 > T, event(E), E != null.
-:- nullevent.
+validEvent(I, In) :- instant(I), inst(In), event(E), occurred(E, In, I), not occurred(viol(_), In, I), E != null.
+validEvent(I) :- validEvent(I, In), inst(In).
+:- validEvent(I2), not validEvent(I), I < I2, instant(I), instant(I2).
+:- instant(I), not validEvent(I), occurred(viol(_), In, I).
 deadEvent :- observed(noDeadline(X), I, T).
 :- deadEvent.
-hasViol(I, T) :- occurred(viol(E), I, T), instant(T), not final(T), inst(I).
-%% isActive(I, T) :- holdsat(active, I, T), inst(I), instant(T).
-%% :- not isActive(I, T), instant(T), not final(T).
-instNoViol(T) :- not hasViol(I, T), inst(I), instant(T).
-:- not instNoViol(T), instant(T), not final(T).
 nullInst :- occurred(X, null, T).
 :- nullInst.

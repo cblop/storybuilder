@@ -13,7 +13,7 @@
 ;; GENERAL
 
 (def tab-list [{:id :tab1 :label "Edit"}
-               ;; {:id :tab2 :label "Arrange"}
+               {:id :tab2 :label "Arrange"}
                ])
 
 (def spacer [com/gap :size "5px"])
@@ -561,11 +561,13 @@
                                 peer-ids (map :id peers)
                                 ;; p (println (count peers))
                                 linked (seq (filter #(and (= (:from %) prev-id) (some (fn [x] (= (:to %) x)) peer-ids)) edges))
+                                ;; linked (seq (filter #(some (fn [x] (= (:to %) x)) peer-ids) edges))
+
                                 ;; linked false
                                 ;; p (if-not linked (println (:from (first peers))))
                                 this-id (if-not linked (int (gensym "")) peer-id)
                                 ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-                                e (if linked (assoc (apply merge (map :edges peers)) :to this-id) {:from prev-id :to this-id :label (:inst event) :color (color-edge data (:inst event)) :font {:align "bottom"}})
+                                e (if linked (assoc (apply merge (map :edges peers)) :to this-id) {:from prev-id :to this-id :label (:inst event) :color (color-edge data (:inst event)) :arrows "to" :font {:align "bottom"}})
                                 n (if linked (assoc (apply merge (map :nodes peers)) :id this-id) {:label label :id this-id :level ts-num :event event :prev prev-id})
                                 ]
                             (if (and event (not linked))
@@ -576,8 +578,8 @@
     (if (= (count (:nodes graph)) 1) (assoc-in graph [:nodes 0] {:id 0 :label "COMPILE ERROR" :level 0 :color "#ffffff" :shape "text"}) graph)
   ))
 
+
 ;; (defn data->graph [data]
-;;   (println (str (count data) " answer sets."))
 ;;   (let [graph
 ;;         (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
 ;;           (if (empty? answer-sets) {:nodes nodes :edges edges}
@@ -585,91 +587,30 @@
 ;;                     (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-id 0]
 ;;                       (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
 ;;                           (let [viol-inst (first (map :inst (filter :inst (map :viol (:occurred (first time-step))))))
-;;                                 events (remove #(or (= (:inst %) viol-inst) (:viol %) (= (apply str (take 3 (:event %))) "int")) (:occurred (first time-step))) ; NOTE: this is just the FIRST event
-;;                                 new-nodes (loop [es events e-nodes [] e-edges [] last-id prev-id]
-;;                                             (if (empty? es) {:nodes e-nodes :edges e-edges :last last-id}
-;;                                                 (let [event (first es)
-;;                                                       label (str (:event event) " " (apply str (interpose " " (:params event))))
-;;                                                       ;; peers (filter #(= (:level %) ts-num) nodes)
-;;                                                       ;; peers (filter #(and (= (:inst (:event %)) (:inst event)) (= (:label %) label) (= (:level %) ts-num)) nodes)
-;;                                                       peers (filter #(and (= (:inst (:event %)) (:inst event)) (= (:label %) label) (= (:level %) ts-num)) nodes)
-;;                                                       ;; peer-id (:id (first (filter #(= (:label %) label) peers)))
-;;                                                       ;; peer-ids (map :id (filter #(and (= (:inst (:event %)) (:inst event)) (= (:label %) label)) peers))
-;;                                                       peer-id (:id (first peers))
-
-;;                                                       ;; linked-nodes (remove nil? (for [e edges]                             ;; return ones that are already linked
-;;                                                       ;;                             (if (and (= (:from e) prev-id)
-;;                                                       ;;                                      (some #(= (:to e %)) peer-ids))
-;;                                                       ;;                               (:to e))))
-
-;;                                                       p (println (count peers))
-;;                                                       p (println peers)
-;;                                                       ;; p (println linked-nodes)
-;;                                                       ;; linked (first linked-nodes)               ;; get the first result
-;;                                                       linked (first (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
-;;                                                       linked false
-;;                                                       ;; peer-id (first peer-ids)
-;;                                                       ;; linked (first (filter #(and (= (:from %) last-id) (= (:to %) peer-id)) edges))
-;;                                                       ;; linked (seq (filter #(and (= (:inst last-id) (:inst peer-id)) (= (:from %) last-id) (= (:to %) peer-id)) edges))
-;;                                                       this-id (if-not linked (int (gensym "")) linked)
-;;                                                       inst (if-not linked (:inst event) (:inst (:event (first (filter #(= (:id %) this-id) nodes)))))
-;;                                                       ;; inst (:inst event)
-;;                                                       ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
-;;                                                       ee {:from prev-id :to this-id :label inst :font {:align "bottom"}}
-;;                                                       en {:label label :id this-id :level ts-num :event event}]
-;;                                                   (if (and event (not linked))
-;;                                                     (recur (rest es) (conj e-nodes en) (conj e-edges ee) this-id)
-;;                                                     (recur (rest es) e-nodes e-edges this-id)
-;;                                                     ))))]
-;;                             (recur (rest time-step) (concat ts-nodes (:nodes new-nodes)) (concat ts-edges (:edges new-nodes)) (inc ts-num) (:last new-nodes)))))]
-;;                 (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))]
-;;     (if (= (count (:nodes graph)) 1) (assoc-in graph [:nodes 0] {:id 0 :label "COMPILE ERROR" :level 0 :color "#ffffff" :shape "text"})
-;;         graph)
-;;   ))
-
-;; (empty? (clojure.set/intersection (set [1 5 7]) (set [2 3 4 1])))
-
-;; (defn data->graph [data]
-;;   (let [graph
-;;         (loop [answer-sets data as-num 1 nodes [{:id 0 :label "START" :level 0 :color "#FF3333"}] edges []]
-;;           (if (empty? answer-sets) {:nodes nodes :edges edges}
-;;               (let [options
-;;                     (loop [time-step (first answer-sets) ts-nodes [] ts-edges [] ts-num 1 prev-ids [0]]
-;;                       (if (empty? time-step) {:nodes ts-nodes :edges ts-edges}
-;;                           (let [events (remove #(or (:viol %) (= (apply str (take 3 (:event %))) "int")) (:occurred (first time-step)))
-;;                                 mknode (fn [ev]
-;;                                          (let [label (str (:event ev) " " (apply str (interpose " " (:params ev))))
-;;                                                peers (filter #(= (:level %) ts-num) nodes)             ;; are there any nodes already at the same level?
-;;                                                peer-ids (map :id (filter #(= (:label %) label) peers)) ;; get their ids
-;;                                                linked-nodes (for [e edges]                             ;; return ones that are already linked
-;;                                                         (if (and (some #(= (:from e) %) prev-ids)
-;;                                                                  (some #(= (:to e %)) peers))
-;;                                                           (:to e)))
-;;                                                ;; linked-nodes (clojure.set/intersection (set peer-ids) (set (map :to edges)))
-;;                                                linked (first (remove nil? linked-nodes))               ;; get the first result
-;;                                                ;; linked false
-;;                                                p (println (map #(str "from: " (:from %) " to: " (:to %)) edges))
-;;                                                p (println linked-nodes)
-;;                                                p (println linked)
-;;                                                p (println (str "<-: " prev-ids))
-;;                                                p (println (str "==: " peer-ids))
-;;                                                ;; linked (seq (filter #(and (= (:from %) prev-id) (= (:to %) peer-id)) edges))
-;;                                                ;; linked (not (and (empty? (clojure.set/intersection (set prev-ids) (set (map :from edges)))) (empty? (clojure.set/intersection (set peer-ids) (set (map :to edges))))))
-;;                                                ;; linked false
-;;                                                this-id (if-not linked (int (gensym "")) linked)        ;; if it's already linked, that's the current node, otherwise make a new id
-;;                                                es (map #(hash-map :from % :to this-id :label (:inst ev) :font {:align "bottom"}) prev-ids)   ;; link previous nodes to the current one
-;;                                                n {:label label :id this-id :level ts-num :event ev}]
-;;                                            {:node n :edges es :linked linked}))
-;;                                 newgraph (remove :linked (map mknode events))
-;;                                 newnodes (map :node newgraph)
-;;                                 newedges (mapcat :edges newgraph)
-;;                                 newids (map :id newnodes)
+;;                                 event (first (remove #(or (= (:inst %) viol-inst) (:viol %) (= (apply str (take 3 (:event %))) "int")) (:occurred (first time-step)))) ; NOTE: this is just the FIRST event
+;;                                 label (str (:event event) " " (apply str (interpose " " (:params event))))
+;;                                 peers (filter #(and (= (:inst (:event %)) (:inst event)) (= (:label %) label) (= (:level %) ts-num)) nodes)
+;;                                 ;; unique (if (seq (filter #(= (:label %) label) peers)) false true)
+;;                                 ;; peer-id (:id (first (filter #(= (:label %) label) peers)))
+;;                                 peer-id (:id (first peers))
+;;                                 peer-ids (map :id peers)
+;;                                 ;; p (println (count peers))
+;;                                 linked (seq (filter #(and (= (:from %) prev-id) (some (fn [x] (= (:to %) x)) peer-ids)) edges))
+;;                                 ;; linked false
+;;                                 ;; p (if-not linked (println (:from (first peers))))
+;;                                 this-id (if-not linked (int (gensym "")) peer-id)
+;;                                 ;; e (merge {:from prev-id :to this-id :label (:inst event) :font (if (> ts-num 1) {:align "bottom" :color "#dddddd"} {:align "bottom"})} (if (> ts-num 1) {:color "#dddddd"}))
+;;                                 e (if linked (assoc (apply merge (map :edges peers)) :to this-id) {:from prev-id :to this-id :label (:inst event) :color (color-edge data (:inst event)) :font {:align "bottom"}})
+;;                                 n (if linked (assoc (apply merge (map :nodes peers)) :id this-id) {:label label :id this-id :level ts-num :event event :prev prev-id})
 ;;                                 ]
-;;                             (recur (rest time-step) (concat ts-nodes newnodes) (concat ts-edges newedges) (inc ts-num) newids)
-;;                             )))]
+;;                             (if (and event (not linked))
+;;                               (recur (rest time-step) (conj ts-nodes n) (conj ts-edges e) (inc ts-num) this-id)
+;;                               (recur (rest time-step) ts-nodes ts-edges (inc ts-num) this-id)
+;;                               ))))]
 ;;                 (recur (rest answer-sets) (inc as-num) (concat nodes (:nodes options)) (concat edges (:edges options))))))]
 ;;     (if (= (count (:nodes graph)) 1) (assoc-in graph [:nodes 0] {:id 0 :label "COMPILE ERROR" :level 0 :color "#ffffff" :shape "text"}) graph)
 ;;   ))
+
 
 ;; FORCE-DIRECTED GRAPH ---------------------------------------------
 

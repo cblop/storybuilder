@@ -103,7 +103,7 @@
       (mc/insert db "stories" (merge {:_id id} data))
       ;; (make-story (assoc data :tropes (map get-trope-by-id (:tropes data))))
       (println "NEW STORY")
-      (spit "resources/debug-out.txt" (make-story data (str id) (:lookahead data) (:limit data)))
+      ;; (spit "resources/debug-out.txt" (make-story data (str id) (:lookahead data) (:limit data)))
       (make-story (assoc data :starters (map event-name (:starters data))) (str id) (:lookahead data) (:limit data))
       ;; {:id (str id) :text "Testing..."}
       )))
