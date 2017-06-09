@@ -1,0 +1,105 @@
+institution goAndSearch;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Go and Search ----------
+
+exogenous event kill(Agent, Agent);
+exogenous event go(Agent, PlaceName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Go and Search ----------
+violation event noViolation;
+
+% INST EVENTS: Go and Search ----------
+
+inst event intStartItemSearch;
+inst event intKill(Agent, Agent);
+inst event intGo(Agent, PlaceName);
+inst event intGoAndSearch(Agent, Agent, PlaceName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: Go and Search ----------
+intGoAndSearch(R, S, T) initiates
+    phase(goAndSearch, phaseA),
+    perm(kill(R, S)) if
+        phase(goAndSearch, active),
+        role(R, hero),
+        role(S, villain);
+intGoAndSearch(R, S, T) initiates
+    phase(goAndSearch, phaseB) if
+        phase(goAndSearch, phaseA);
+% TERMINATES: Go and Search ----------
+intGoAndSearch(R, S, T) terminates
+    phase(goAndSearch, active),
+    perm(go(R, T)) if
+        phase(goAndSearch, active),
+        role(R, hero),
+        place(T, away);
+intGoAndSearch(R, S, T) terminates
+    phase(goAndSearch, phaseA),
+    perm(kill(R, S)) if
+        phase(goAndSearch, phaseA),
+        role(R, hero),
+        role(S, villain);
+intGoAndSearch(R, S, T) terminates
+    phase(goAndSearch, phaseB) if
+        phase(goAndSearch, phaseB);
+
+
+% GENERATES: Go and Search ----------
+kill(R, S) generates
+    intStartItemSearch if
+        role(R, hero),
+        role(S, villain),
+        phase(goAndSearch, phaseA);
+
+go(R, T) generates
+    intGoAndSearch(R, S, T) if
+        role(R, hero),
+        place(T, away);
+kill(R, S) generates
+    intGoAndSearch(R, S, T) if
+        role(R, hero),
+        role(S, villain);
+
+% INITIALLY: -----------
+initially
+    pow(intStartItemSearch);
+initially
+    pow(intGoAndSearch(R, S, T)) if role(R, hero), role(S, villain), place(T, away);
+initially
+    perm(intStartItemSearch);
+initially
+    perm(intGoAndSearch(R, S, T)) if role(R, hero), role(S, villain), place(T, away);
+initially
+    perm(go(R, T)) if role(R, hero), place(T, away);
+initially
+    phase(goAndSearch, active),
+    role(hero, hero),
+    role(villain, villain),
+    role(villain, villain),
+    role(hero, hero),
+    role(dragon, dragon),
+    role(hero, hero),
+    place(away, away),
+    place(home, home),
+    place(landOfAdventure, landOfAdventure),
+    object(macguffin, macguffin);

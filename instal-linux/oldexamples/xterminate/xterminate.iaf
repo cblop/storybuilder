@@ -1,0 +1,3 @@
+initially(xterminate3,x3_fluent)
+initially(xterminate1,perm(remove))
+initially(xterminate2,tpow(xterminate1,x3_fluent,xterminate3))

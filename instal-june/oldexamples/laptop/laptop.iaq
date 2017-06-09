@@ -1,0 +1,5 @@
+observed(exit(agent1,office1))
+observed(leave(agent1,key1))
+observed(take(agent2,key1))
+observed(enter(agent2,office1))
+observed(take(agent2,laptop1))

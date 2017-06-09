@@ -1,0 +1,1 @@
+:- occurred(null,I,J).

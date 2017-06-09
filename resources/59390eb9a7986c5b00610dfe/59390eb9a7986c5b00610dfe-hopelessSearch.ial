@@ -1,0 +1,103 @@
+institution hopelessSearch;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Hopeless search ----------
+
+exogenous event go(Agent, PlaceName);
+exogenous event seek(Agent, ObjectName);
+exogenous event lose(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Hopeless search ----------
+violation event noViolation;
+
+% INST EVENTS: Hopeless search ----------
+
+inst event intSeek(Agent, ObjectName);
+inst event intLose(Agent, ObjectName);
+inst event intGo(Agent, PlaceName);
+inst event intHopelessSearch(Agent, ObjectName, PlaceName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: Hopeless search ----------
+intHopelessSearch(R, S, T) initiates
+    phase(hopelessSearch, phaseA),
+    obl(intGet(R,S), intNoDeadline, noViolation),
+    perm(lose(R, S)) if
+        phase(hopelessSearch, active),
+        role(R, student),
+        object(S, book);
+intHopelessSearch(R, S, T) initiates
+    phase(hopelessSearch, phaseB),
+    perm(seek(R, S)) if
+        phase(hopelessSearch, phaseA),
+        role(R, student),
+        object(S, book);
+% TERMINATES: Hopeless search ----------
+intHopelessSearch(R, S, T) terminates
+    phase(hopelessSearch, active),
+    perm(go(R, T)) if
+        phase(hopelessSearch, active),
+        role(R, student),
+        place(T, bookshop);
+intHopelessSearch(R, S, T) terminates
+    phase(hopelessSearch, phaseA),
+    obl(intGet(R,S), intNoDeadline, noViolation),
+    perm(lose(R, S)) if
+        phase(hopelessSearch, phaseA),
+        role(R, student),
+        object(S, book);
+intHopelessSearch(R, S, T) terminates
+    phase(hopelessSearch, phaseB),
+    perm(seek(R, S)) if
+        phase(hopelessSearch, phaseB),
+        role(R, student),
+        object(S, book);
+
+
+% GENERATES: Hopeless search ----------
+
+go(R, T) generates
+    intHopelessSearch(R, S, T) if
+        role(R, student),
+        place(T, bookshop);
+lose(R, S) generates
+    intHopelessSearch(R, S, T) if
+        role(R, student),
+        object(S, book);
+seek(R, S) generates
+    intHopelessSearch(R, S, T) if
+        role(R, student),
+        object(S, book);
+
+% INITIALLY: -----------
+initially
+    pow(intHopelessSearch(R, S, T)) if role(R, student), object(S, book), place(T, bookshop);
+initially
+    perm(intHopelessSearch(R, S, T)) if role(R, student), object(S, book), place(T, bookshop);
+initially
+    perm(go(R, T)) if role(R, student), place(T, bookshop);
+initially
+    phase(hopelessSearch, active),
+    role(student, student),
+    place(bookshop, bookshop),
+    place(library, library),
+    object(book, book);

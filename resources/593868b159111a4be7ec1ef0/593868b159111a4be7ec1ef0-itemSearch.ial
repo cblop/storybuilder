@@ -1,0 +1,89 @@
+institution itemSearch;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Item Search ----------
+exogenous event go(Agent, PlaceName);
+exogenous event find(Agent, ObjectName);
+exogenous event chase(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Item Search ----------
+violation event noViolation;
+
+% INST EVENTS: Item Search ----------
+inst event intChase(Agent, ObjectName);
+inst event intFind(Agent, ObjectName);
+inst event intGo(Agent, PlaceName);
+inst event intItemSearch(Agent, ObjectName, PlaceName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: Item Search ----------
+intItemSearch(R, S, T) initiates
+    phase(itemSearch, phaseA),
+    perm(find(R, S)),
+    perm(go(R, T)) if
+        phase(itemSearch, active),
+        object(S, macguffin),
+        place(T, home),
+        role(R, hero);
+% TERMINATES: Item Search ----------
+intItemSearch(R, S, T) terminates
+    phase(itemSearch, active),
+    perm(chase(R, S)) if
+        phase(itemSearch, active),
+        role(R, hero),
+        object(S, macguffin);
+intItemSearch(R, S, T) terminates
+    phase(itemSearch, phaseA),
+    perm(find(R, S)),
+    perm(go(R, T)) if
+        phase(itemSearch, phaseA),
+        object(S, macguffin),
+        place(T, home),
+        role(R, hero);
+
+
+% GENERATES: Item Search ----------
+go(R, T) generates
+    intItemSearch(R, S, T) if
+        role(R, hero),
+        place(T, home);
+chase(R, S) generates
+    intItemSearch(R, S, T) if
+        role(R, hero),
+        object(S, macguffin);
+find(R, S) generates
+    intItemSearch(R, S, T) if
+        role(R, hero),
+        object(S, macguffin);
+
+% INITIALLY: -----------
+initially
+    pow(intItemSearch(R, S, T)) if role(R, hero), object(S, macguffin), place(T, home);
+initially
+    perm(intItemSearch(R, S, T)) if role(R, hero), object(S, macguffin), place(T, home);
+initially
+    role(hero, hero),
+    role(villain, villain),
+    role(hero, hero),
+    place(away, away),
+    place(home, home),
+    object(macguffin, macguffin);

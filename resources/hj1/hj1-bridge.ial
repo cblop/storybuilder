@@ -1,0 +1,43 @@
+institution tropeBridge;
+
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+fluent at(Agent, Place);
+
+
+
+
+% INST EVENTS: The Hero's Journey ----------
+inst event intHerosJourney(Agent, Agent, Agent, PlaceName, PlaceName, PlaceName);
+
+
+% EXTERNAL EVENTS: The Hero's Journey ----------
+exogenous event go(Agent, PlaceName);
+exogenous event noDeadline(Identity);
+
+
+
+% VIOLATION EVENTS: The Hero's Journey ----------
+violation event noViolation(Identity);
+
+
+
+
+
+
+
+

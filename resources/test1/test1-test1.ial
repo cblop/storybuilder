@@ -1,0 +1,108 @@
+institution test1;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Test 1 ----------
+exogenous event go(Agent, PlaceName);
+exogenous event start(Trope);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Test 1 ----------
+violation event noViolation;
+
+% INST EVENTS: Test 1 ----------
+inst event intGo(Agent, PlaceName);
+inst event intTest1(Agent, PlaceName, PlaceName);
+inst event intStart;
+inst event intNoDeadline;
+
+
+
+% INITIATES: Test 1 ----------
+intTest1(R, S, T) initiates
+    phase(test1, phaseA),
+    perm(go(R, S)) if
+        phase(test1, inactive),
+        role(R, hero),
+        place(S, home);
+intTest1(R, S, T) initiates
+    phase(test1, done) if
+        phase(test1, phaseA);
+intStart initiates
+    perm(go(R, T)) if role(R, hero), place(T, landOfAdventure);
+
+
+
+% TERMINATES: Test 1 ----------
+intTest1(R, S, T) terminates
+    phase(test1, inactive),
+    perm(go(R, T)) if
+        phase(test1, inactive),
+        role(R, hero),
+        place(T, landOfAdventure);
+intTest1(R, S, T) terminates
+    phase(test1, phaseA),
+    perm(go(R, S)) if
+        phase(test1, phaseA),
+        role(R, hero),
+        place(S, home);
+intStart terminates perm(start(test1)), perm(intStart), pow(intStart);
+
+
+
+% GENERATES: Test 1 ----------
+go(R, S) generates
+    intTest1(R, S, T) if
+        role(R, hero),
+        place(S, home);
+go(R, T) generates
+    intTest1(R, S, T) if
+        role(R, hero),
+        place(T, landOfAdventure);
+go(R, S) generates
+    intGo(R,S) if
+        role(R, hero),
+        place(S, home);
+go(R, T) generates
+    intGo(R,T) if
+        role(R, hero),
+        place(T, landOfAdventure);
+
+start(test1) generates intStart;
+
+
+
+
+% INITIALLY: -----------
+initially
+    pow(intTest1(R, S, T)) if role(R, hero), place(S, home), place(T, landOfAdventure);
+initially
+    perm(intTest1(R, S, T)) if role(R, hero), place(S, home), place(T, landOfAdventure);
+initially
+    perm(go(R, T)) if role(R, hero), place(T, landOfAdventure);
+initially
+    phase(test1, inactive),
+    role(lukeSkywalker, hero),
+    role(darthVader, villain),
+    role(obiWan, mentor),
+    place(tatooine, home),
+    place(space, away),
+    place(alderaan, forest),
+    place(japan, landOfAdventure),
+    object(lightSaber, weapon),
+    object(sword, weapon);

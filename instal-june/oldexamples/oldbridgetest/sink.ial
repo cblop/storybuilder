@@ -1,0 +1,10 @@
+institution sink;
+type X;
+exogenous event sink_exevent(X);
+inst event sink_inevent(X);
+fluent sink_fluent(X);
+sink_exevent(X) generates sink_inevent(X);
+sink_inevent(X) initiates sink_fluent(X);
+% initially perm(sink_exevent(X));
+% initially perm(sink_inevent(X));
+% initially pow(sink_inevent(X));

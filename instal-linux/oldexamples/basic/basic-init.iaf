@@ -1,0 +1,4 @@
+initially(basic,perm(in_red(foo)))
+initially(basic,pow(in_red(foo)))
+initially(basic,perm(ex_red(foo)))
+initially(basic,perm(ex_blue(foo)))

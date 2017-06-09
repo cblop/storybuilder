@@ -1,0 +1,8 @@
+institution event_bridge;
+type Inst;
+type X;
+exogenous event source_exevent1(X);
+exogenous event sink_exevent(X);
+cross fluent gpow(Inst,sink_exevent(X),Inst);
+source_exevent1(X) xgenerates sink_exevent(X);
+% initially gpow(source,sink_exevent(X),sink);

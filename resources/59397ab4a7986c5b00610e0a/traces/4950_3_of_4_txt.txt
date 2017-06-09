@@ -1,0 +1,67 @@
+Answer Set 3:
+
+Time Step 1:
+
+holdsat(role(villain,villain),evilAdversary)
+holdsat(role(hero,hero),evilAdversary)
+holdsat(role(dragon,dragon),evilAdversary)
+holdsat(phase(evilAdversary,phaseA),evilAdversary)
+holdsat(pow(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(null),evilAdversary)
+holdsat(perm(kill(hero,dragon)),evilAdversary)
+holdsat(perm(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(chase(hero,dragon)),evilAdversary)
+holdsat(live(evilAdversary),evilAdversary)
+occurred(walk(hero),evilAdversary)
+occurred(intEvilAdversary(hero,dragon),evilAdversary)
+
+
+Time Step 2:
+
+holdsat(role(villain,villain),evilAdversary)
+holdsat(role(hero,hero),evilAdversary)
+holdsat(role(dragon,dragon),evilAdversary)
+holdsat(pow(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(null),evilAdversary)
+holdsat(perm(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(live(evilAdversary),evilAdversary)
+occurred(intEvilAdversary(hero,dragon),evilAdversary)
+occurred(chase(hero,dragon),evilAdversary)
+
+
+Time Step 3:
+
+holdsat(role(villain,villain),evilAdversary)
+holdsat(role(hero,hero),evilAdversary)
+holdsat(role(dragon,dragon),evilAdversary)
+holdsat(pow(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(null),evilAdversary)
+holdsat(perm(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(live(evilAdversary),evilAdversary)
+occurred(null,evilAdversary)
+
+
+Time Step 4:
+
+holdsat(role(villain,villain),evilAdversary)
+holdsat(role(hero,hero),evilAdversary)
+holdsat(role(dragon,dragon),evilAdversary)
+holdsat(pow(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(null),evilAdversary)
+holdsat(perm(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(live(evilAdversary),evilAdversary)
+occurred(null,evilAdversary)
+
+
+Time Step 5:
+
+holdsat(role(villain,villain),evilAdversary)
+holdsat(role(hero,hero),evilAdversary)
+holdsat(role(dragon,dragon),evilAdversary)
+holdsat(pow(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(perm(null),evilAdversary)
+holdsat(perm(intEvilAdversary(hero,dragon)),evilAdversary)
+holdsat(live(evilAdversary),evilAdversary)
+occurred(null,evilAdversary)
+
+

@@ -1,0 +1,1 @@
+python3 instal-linux/instalquery.py -v -i resources/constraint.lp resources/59390678a7986c5b00610df7/59390678a7986c5b00610df7-eggMakingHero.ial -l 5 -n 500 -j resources/59390678a7986c5b00610df7/json -d resources/59390678a7986c5b00610df7/domain-59390678a7986c5b00610df7.idc

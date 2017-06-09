@@ -1,0 +1,72 @@
+Answer Set 3:
+
+Time Step 1:
+
+holdsat(role(hero,hero),itemSearch)
+holdsat(place(landOfAdventure,landOfAdventure),itemSearch)
+holdsat(place(home,home),itemSearch)
+holdsat(phase(itemSearch,phaseA),itemSearch)
+holdsat(object(macguffin,macguffin),itemSearch)
+holdsat(pow(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(null),itemSearch)
+holdsat(perm(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(go(hero,home)),itemSearch)
+holdsat(perm(find(hero,macguffin)),itemSearch)
+holdsat(live(itemSearch),itemSearch)
+occurred(intItemSearch(hero,macguffin,home),itemSearch)
+occurred(chase(hero,macguffin),itemSearch)
+
+
+Time Step 2:
+
+holdsat(role(hero,hero),itemSearch)
+holdsat(place(landOfAdventure,landOfAdventure),itemSearch)
+holdsat(place(home,home),itemSearch)
+holdsat(object(macguffin,macguffin),itemSearch)
+holdsat(pow(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(null),itemSearch)
+holdsat(perm(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(live(itemSearch),itemSearch)
+occurred(intItemSearch(hero,macguffin,home),itemSearch)
+occurred(go(hero,home),itemSearch)
+
+
+Time Step 3:
+
+holdsat(role(hero,hero),itemSearch)
+holdsat(place(landOfAdventure,landOfAdventure),itemSearch)
+holdsat(place(home,home),itemSearch)
+holdsat(object(macguffin,macguffin),itemSearch)
+holdsat(pow(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(null),itemSearch)
+holdsat(perm(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(live(itemSearch),itemSearch)
+occurred(null,itemSearch)
+
+
+Time Step 4:
+
+holdsat(role(hero,hero),itemSearch)
+holdsat(place(landOfAdventure,landOfAdventure),itemSearch)
+holdsat(place(home,home),itemSearch)
+holdsat(object(macguffin,macguffin),itemSearch)
+holdsat(pow(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(null),itemSearch)
+holdsat(perm(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(live(itemSearch),itemSearch)
+occurred(null,itemSearch)
+
+
+Time Step 5:
+
+holdsat(role(hero,hero),itemSearch)
+holdsat(place(landOfAdventure,landOfAdventure),itemSearch)
+holdsat(place(home,home),itemSearch)
+holdsat(object(macguffin,macguffin),itemSearch)
+holdsat(pow(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(perm(null),itemSearch)
+holdsat(perm(intItemSearch(hero,macguffin,home)),itemSearch)
+holdsat(live(itemSearch),itemSearch)
+occurred(null,itemSearch)
+
+

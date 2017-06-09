@@ -1,0 +1,185 @@
+institution eggMakingHero;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: The Egg Making Hero ----------
+exogenous event make(Agent, ObjectName);
+exogenous event eat(Agent, ObjectName);
+exogenous event steal(Agent, ObjectName);
+exogenous event go(Agent, PlaceName);
+exogenous event take(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: The Egg Making Hero ----------
+violation event noViolation;
+
+% INST EVENTS: The Egg Making Hero ----------
+inst event intTake(Agent, ObjectName);
+inst event intMake(Agent, ObjectName);
+inst event intEat(Agent, ObjectName);
+inst event intGo(Agent, PlaceName);
+inst event intSteal(Agent, ObjectName);
+inst event intEggMakingHero(Agent, Agent, ObjectName, PlaceName, PlaceName, PlaceName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: The Egg Making Hero ----------
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseA),
+    perm(make(R, T)) if
+        phase(eggMakingHero, active),
+        role(R, hero),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseB),
+    perm(go(S, V)) if
+        phase(eggMakingHero, phaseA),
+        role(S, villain),
+        place(V, home);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseC),
+    perm(steal(S, T)) if
+        phase(eggMakingHero, phaseB),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseD),
+    perm(take(S, T)) if
+        phase(eggMakingHero, phaseC),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseE),
+    perm(go(S, U)) if
+        phase(eggMakingHero, phaseD),
+        role(S, villain),
+        place(U, evilLair);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, phaseF),
+    perm(eat(S, T)) if
+        phase(eggMakingHero, phaseE),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) initiates
+    phase(eggMakingHero, done),
+    perm(go(R, W)) if
+        phase(eggMakingHero, phaseF),
+        role(R, hero),
+        place(W, landOfAdventure);
+% TERMINATES: The Egg Making Hero ----------
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, active),
+    perm(go(R, V)) if
+        phase(eggMakingHero, active),
+        role(R, hero),
+        place(V, home);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseA),
+    perm(make(R, T)) if
+        phase(eggMakingHero, phaseA),
+        role(R, hero),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseB),
+    perm(go(S, V)) if
+        phase(eggMakingHero, phaseB),
+        role(S, villain),
+        place(V, home);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseC),
+    perm(steal(S, T)) if
+        phase(eggMakingHero, phaseC),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseD),
+    perm(take(S, T)) if
+        phase(eggMakingHero, phaseD),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseE),
+    perm(go(S, U)) if
+        phase(eggMakingHero, phaseE),
+        role(S, villain),
+        place(U, evilLair);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, phaseF),
+    perm(eat(S, T)) if
+        phase(eggMakingHero, phaseF),
+        role(S, villain),
+        object(T, eggs);
+intEggMakingHero(R, S, T, U, V, W) terminates
+    phase(eggMakingHero, done),
+    perm(go(R, W)) if
+        phase(eggMakingHero, done),
+        role(R, hero),
+        place(W, landOfAdventure);
+
+
+% GENERATES: The Egg Making Hero ----------
+go(S, V) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(S, villain),
+        place(V, home);
+go(S, U) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(S, villain),
+        place(U, evilLair);
+go(R, W) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(R, hero),
+        place(W, landOfAdventure);
+take(S, T) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(S, villain),
+        object(T, eggs);
+eat(S, T) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(S, villain),
+        object(T, eggs);
+make(R, T) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(R, hero),
+        object(T, eggs);
+go(R, V) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(R, hero),
+        place(V, home);
+steal(S, T) generates
+    intEggMakingHero(R, S, T, U, V, W) if
+        role(S, villain),
+        object(T, eggs);
+
+% INITIALLY: -----------
+initially
+    pow(intEggMakingHero(R, S, T, U, V, W)) if role(R, hero), role(S, villain), object(T, eggs), place(U, evilLair), place(V, home), place(W, landOfAdventure);
+initially
+    perm(intEggMakingHero(R, S, T, U, V, W)) if role(R, hero), role(S, villain), object(T, eggs), place(U, evilLair), place(V, home), place(W, landOfAdventure);
+initially
+    perm(go(R, V)) if role(R, hero), place(V, home);
+initially
+    phase(eggMakingHero, active),
+    role(hero, hero),
+    role(villain, villain),
+    role(mentor, mentor),
+    place(home, home),
+    place(evilLair, evilLair),
+    place(landOfAdventure, landOfAdventure),
+    object(eggs, eggs);

@@ -1,0 +1,17 @@
+bridge tropeBridge;
+
+
+
+source test17;
+
+sink quest;
+
+cross fluent ipow(test17, active, quest);
+
+intStartQuest xinitiates active;
+
+
+
+
+
+initially ipow (test17,  active, quest);

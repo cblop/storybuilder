@@ -1,0 +1,123 @@
+institution insecureObject;
+
+type Agent;
+type Object;
+type Location;
+
+noninertial fluent vulnerable(Object);
+noninertial fluent situation1(Object);
+noninertial fluent situation2(Object);
+noninertial fluent situation3(Object);
+noninertial fluent situation4(Object);
+noninertial fluent failed(Object);
+
+noninertial fluent employeeIn(Location);
+
+fluent employee(Agent);
+fluent attacker(Agent);
+fluent laptop(Object);
+fluent key(Object);
+fluent office(Location);
+fluent hallway(Location);
+fluent alocation(Agent,Location);
+fluent olocation(Object,Location);
+fluent locked(Location);
+fluent unlocked(Location);
+fluent holds(Agent,Object);
+
+exogenous event enter(Agent,Location);
+exogenous event exit(Agent,Location);
+exogenous event take(Agent,Object);
+exogenous event leave(Agent,Object);
+
+failed(O) when holds(A,O),
+   attacker(A),
+   laptop(O)
+;
+
+employeeIn(L) when alocation(A,L), employee(A);
+
+vulnerable(O) when situation1(O);
+vulnerable(O) when situation2(O);
+vulnerable(O) when situation3(O);
+vulnerable(O) when situation4(O);
+
+situation3(O) when
+   olocation(O,L), laptop(O), hallway(L)
+;
+
+situation2(O) when
+   olocation(O,L),
+   not employeeIn(L),
+   alocation(A,L),
+   locked(L)
+;
+
+situation1(O) when
+   olocation(O,L),
+   not employeeIn(L),
+   alocation(A,L),
+   unlocked(L)
+;
+
+situation4(O) when
+   olocation(O,L), key(O), hallway(L)
+;
+
+initially
+  olocation(laptop1,office1),
+  alocation(agent1,office1),
+  alocation(agent2,hallway1),
+  hallway(hallway1),
+  office(office1),
+  unlocked(office1),
+  holds(agent1,key1),
+  key(key1),
+  laptop(laptop1),
+  employee(agent1),
+  attacker(agent2)
+;
+
+initially
+    perm(take(X,Y))
+,   perm(leave(X,Y))
+,   perm(exit(X,Y))
+,   perm(enter(X,Y))
+;
+  
+%------------------------------------------------------------------------
+
+enter(A,L) initiates unlocked(L),alocation(A,L)
+   if office(L),holds(A,K),key(K);
+enter(A,L) initiates alocation(A,L)
+   if unlocked(L),office(L);
+enter(A,L1) terminates locked(L1),alocation(A,L2)
+   if locked(L1),office(L1),
+      holds(A,K),key(K),hallway(L2);
+enter(A,L1) terminates alocation(A,L2)
+   if unlocked(L1),office(L1),hallway(L2);
+
+exit(A,L1) initiates alocation(A,L2)
+   if unlocked(L1),office(L1),hallway(L2);
+exit(A,L1) initiates alocation(A,L2),locked(L1)
+   if office(L1),hallway(L2),holds(A,K),key(K);
+exit(A,L) terminates alocation(A,L)
+   if unlocked(L),office(L),alocation(A,L);
+exit(A,L) terminates alocation(A,L),unlocked(L)
+   if unlocked(L),office(L),
+      holds(A,K),key(K),alocation(A,L);
+
+take(A,O) initiates holds(A,O)
+   if alocation(A,L), olocation(O,L),
+      vulnerable(O), attacker(A);
+take(A,O) initiates holds(A,O)
+   if alocation(A,L), olocation(O,L),
+      not holds(A,O), employee(A);
+take(A,O) terminates olocation(O,L)
+   if alocation(A,L), olocation(O,L);
+
+leave(A,O) initiates olocation(O,L)
+    if holds(A,O), alocation(A,L);
+leave(A,O) terminates holds(A,O)
+    if holds(A,O);
+

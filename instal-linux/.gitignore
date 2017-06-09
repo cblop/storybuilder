@@ -1,0 +1,8 @@
+*.pyc
+*idea/
+gringo.so
+clingo.so
+instal_stable.egg-info/
+.vscode
+lint.html
+pylintscript.sh

@@ -1,0 +1,53 @@
+institution yoda;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: yoda ----------
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: yoda ----------
+violation event noViolation;
+
+% INST EVENTS: yoda ----------
+inst event intYoda();
+inst event intNoDeadline;
+
+
+
+% INITIATES: yoda ----------
+% TERMINATES: yoda ----------
+intYoda() terminates
+    phase(yoda, active) if
+        phase(yoda, active);
+
+
+% GENERATES: yoda ----------
+
+% INITIALLY: -----------
+initially
+    pow(intYoda()) if ;
+initially
+    perm(intYoda()) if ;
+initially
+    perm(()) if ;
+initially
+    phase(yoda, active),
+    role(youngActress, youngActress),
+    role(mysteryWoman, mysteryWoman),
+    role(director, director),
+    object(blueKey, blueKey);

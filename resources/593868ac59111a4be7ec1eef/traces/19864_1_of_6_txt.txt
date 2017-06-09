@@ -1,0 +1,77 @@
+Answer Set 1:
+
+Time Step 1:
+
+holdsat(role(student,student),hopelessSearch)
+holdsat(place(library,library),hopelessSearch)
+holdsat(place(bookshop,bookshop),hopelessSearch)
+holdsat(phase(hopelessSearch,active),hopelessSearch)
+holdsat(object(book,book),hopelessSearch)
+holdsat(pow(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(null),hopelessSearch)
+holdsat(perm(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(go(student,bookshop)),hopelessSearch)
+holdsat(live(hopelessSearch),hopelessSearch)
+occurred(null,hopelessSearch)
+
+
+Time Step 2:
+
+holdsat(role(student,student),hopelessSearch)
+holdsat(place(library,library),hopelessSearch)
+holdsat(place(bookshop,bookshop),hopelessSearch)
+holdsat(phase(hopelessSearch,active),hopelessSearch)
+holdsat(object(book,book),hopelessSearch)
+holdsat(pow(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(null),hopelessSearch)
+holdsat(perm(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(go(student,bookshop)),hopelessSearch)
+holdsat(live(hopelessSearch),hopelessSearch)
+occurred(null,hopelessSearch)
+
+
+Time Step 3:
+
+holdsat(role(student,student),hopelessSearch)
+holdsat(place(library,library),hopelessSearch)
+holdsat(place(bookshop,bookshop),hopelessSearch)
+holdsat(phase(hopelessSearch,active),hopelessSearch)
+holdsat(object(book,book),hopelessSearch)
+holdsat(pow(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(null),hopelessSearch)
+holdsat(perm(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(go(student,bookshop)),hopelessSearch)
+holdsat(live(hopelessSearch),hopelessSearch)
+occurred(null,hopelessSearch)
+
+
+Time Step 4:
+
+holdsat(role(student,student),hopelessSearch)
+holdsat(place(library,library),hopelessSearch)
+holdsat(place(bookshop,bookshop),hopelessSearch)
+holdsat(phase(hopelessSearch,active),hopelessSearch)
+holdsat(object(book,book),hopelessSearch)
+holdsat(pow(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(null),hopelessSearch)
+holdsat(perm(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(go(student,bookshop)),hopelessSearch)
+holdsat(live(hopelessSearch),hopelessSearch)
+occurred(null,hopelessSearch)
+
+
+Time Step 5:
+
+holdsat(role(student,student),hopelessSearch)
+holdsat(place(library,library),hopelessSearch)
+holdsat(place(bookshop,bookshop),hopelessSearch)
+holdsat(phase(hopelessSearch,active),hopelessSearch)
+holdsat(object(book,book),hopelessSearch)
+holdsat(pow(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(null),hopelessSearch)
+holdsat(perm(intHopelessSearch(student,book,bookshop)),hopelessSearch)
+holdsat(perm(go(student,bookshop)),hopelessSearch)
+holdsat(live(hopelessSearch),hopelessSearch)
+occurred(null,hopelessSearch)
+
+

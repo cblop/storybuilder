@@ -1,0 +1,17 @@
+institution land;
+
+type Boat;
+type Port;
+type Good;
+
+exogenous event ex_sell(Port, Boat, Good);
+inst event sell(Port, Boat, Good);
+
+fluent in_distress(Boat);
+fluent present(Port, Boat);
+
+ex_sell(P, B, G) generates sell(P, B, G);
+
+initially pow(sell(P, B, G));
+initially perm(sell(P, B, G));
+initially perm(ex_sell(P, B, G));

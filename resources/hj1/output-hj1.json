@@ -1,0 +1,3 @@
+discarding  initially pow ( intHerosJourney ( R , S , T , U , V , W ) ) if R != S , S != T , T != U , U != V , V != W ;
+discarding  perm ( intHerosJourney ( R , S , T , U , V , W ) ) if R != S , S != T , T != U , U != V , V != W ;
+discarding  phase ( herosJourney , phaseA ) , role ( lukeSkywalker , hero ) , role ( darthVader , villain ) , role ( obiWan , mentor ) , place ( tatooine , home ) , object ( lightSaber , weapon ) , object ( sword , weapon ) ;

@@ -1,0 +1,13 @@
+institution source;
+type X;
+exogenous event source_exevent1(X);
+exogenous event source_exevent2(X);
+inst event source_inevent1(X);
+inst event source_inevent2(X);
+fluent source_fluent(X);
+source_exevent1(X) generates source_inevent1(X);
+source_inevent1(X) initiates source_fluent(X);
+source_exevent2(X) generates source_inevent2(X);
+% initially perm(source_exevent(X));
+% initially perm(source_inevent(X));
+% initially pow(source_inevent(X));

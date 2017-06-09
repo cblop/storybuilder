@@ -1,0 +1,11 @@
+institution xterminate2;
+
+type Inst;
+
+exogenous event remove;
+
+fluent x3_fluent;
+
+cross fluent tpow(Inst,x3_fluent,Inst);
+
+remove xterminates x3_fluent;

@@ -1,0 +1,22 @@
+bridge goAndSearchItemSearch;
+
+
+
+source goAndSearch;
+
+sink itemSearch;
+
+cross fluent ipow(goAndSearch, perm(chase(Agent, ObjectName)), itemSearch);
+cross fluent ipow(goAndSearch, phase(Trope, Phase), itemSearch);
+
+intStartItemSearch xinitiates phase(itemSearch, active);
+intStartItemSearch xinitiates perm(chase(R, S)) if
+        role(R, hero),
+        object(S, macguffin);
+
+
+
+
+
+initially ipow(goAndSearch,  perm(chase(R, S)), itemSearch),
+    ipow(goAndSearch, phase(itemSearch, active), itemSearch);

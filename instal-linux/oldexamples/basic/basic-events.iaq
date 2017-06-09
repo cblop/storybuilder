@@ -1,0 +1,3 @@
+observed(ex_red(foo))
+observed(ex_blue(foo))
+observed(ex_green(foo))

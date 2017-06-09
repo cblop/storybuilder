@@ -1,0 +1,10 @@
+institution instA;
+type X;
+exogenous event instA_exevent(X);
+inst event instA_inevent(X);
+fluent instA_fluent(X);
+instA_exevent(X) generates instA_inevent(X);
+instA_inevent(X) initiates instA_fluent(X);
+% initially perm(instA_exevent(X));
+% initially perm(instA_inevent(X));
+% initially pow(instA_inevent(X));

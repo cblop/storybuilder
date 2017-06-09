@@ -1,0 +1,124 @@
+institution yoda;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: yoda ----------
+exogenous event face(Agent, Agent);
+exogenous event surrender(Agent);
+exogenous event visit(Agent, Agent);
+exogenous event take(Agent, ObjectName);
+exogenous event know(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: yoda ----------
+violation event noViolation;
+
+% INST EVENTS: yoda ----------
+inst event intTake(Agent, ObjectName);
+inst event intKnow(Agent, ObjectName);
+inst event intSurrender(Agent);
+inst event intVisit(Agent, Agent);
+inst event intFace(Agent, Agent);
+inst event intYoda(Agent, Agent, Agent, ObjectName, ObjectName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: yoda ----------
+intYoda(R, S, T, U, V) initiates
+    phase(yoda, phaseA),
+    perm(take(R, U)),
+    perm(know(R, V)) if
+        phase(yoda, active),
+        object(U, weapon),
+        role(R, hero),
+        object(V, evilPlan);
+intYoda(R, S, T, U, V) initiates
+    phase(yoda, phaseB),
+    perm(face(R, S)) if
+        phase(yoda, phaseA),
+        role(R, hero),
+        role(S, villain);
+intYoda(R, S, T, U, V) initiates
+    phase(yoda, phaseC),
+    perm(surrender(S)) if
+        phase(yoda, phaseB),
+        role(S, villain);
+% TERMINATES: yoda ----------
+intYoda(R, S, T, U, V) terminates
+    phase(yoda, active),
+    perm(visit(R, T)) if
+        phase(yoda, active),
+        role(R, hero),
+        role(T, mentor);
+intYoda(R, S, T, U, V) terminates
+    phase(yoda, phaseA),
+    perm(take(R, U)),
+    perm(know(R, V)) if
+        phase(yoda, phaseA),
+        object(U, weapon),
+        role(R, hero),
+        object(V, evilPlan);
+intYoda(R, S, T, U, V) terminates
+    phase(yoda, phaseB),
+    perm(face(R, S)) if
+        phase(yoda, phaseB),
+        role(R, hero),
+        role(S, villain);
+intYoda(R, S, T, U, V) terminates
+    phase(yoda, phaseC),
+    perm(surrender(S)) if
+        phase(yoda, phaseC),
+        role(S, villain);
+
+
+% GENERATES: yoda ----------
+surrender(S) generates
+    intYoda(R, S, T, U, V) if
+        role(S, villain);
+know(R, V) generates
+    intYoda(R, S, T, U, V) if
+        role(R, hero),
+        object(V, evilPlan);
+visit(R, T) generates
+    intYoda(R, S, T, U, V) if
+        role(R, hero),
+        role(T, mentor);
+face(R, S) generates
+    intYoda(R, S, T, U, V) if
+        role(R, hero),
+        role(S, villain);
+take(R, U) generates
+    intYoda(R, S, T, U, V) if
+        role(R, hero),
+        object(U, weapon);
+
+% INITIALLY: -----------
+initially
+    pow(intYoda(R, S, T, U, V)) if role(R, hero), role(S, villain), role(T, mentor), object(U, weapon), object(V, evilPlan);
+initially
+    perm(intYoda(R, S, T, U, V)) if role(R, hero), role(S, villain), role(T, mentor), object(U, weapon), object(V, evilPlan);
+initially
+    perm(visit(R, T)) if role(R, hero), role(T, mentor);
+initially
+    phase(yoda, active),
+    role(hero, hero),
+    role(villain, villain),
+    role(mentor, mentor),
+    object(weapon, weapon),
+    object(evilPlan, evilPlan);

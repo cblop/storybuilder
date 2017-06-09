@@ -1,0 +1,104 @@
+institution test17;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Test 17 ----------
+
+exogenous event go(Agent, PlaceName);
+exogenous event start(Trope);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Test 17 ----------
+violation event noViolation;
+
+% INST EVENTS: Test 17 ----------
+
+inst event intStartQuest;
+inst event intGo(Agent, PlaceName);
+inst event intTest17(Agent, PlaceName);
+inst event intStart;
+inst event intNoDeadline;
+
+
+
+% INITIATES: Test 17 ----------
+intTest17(R, S) initiates
+    phase(test17, phaseA) if
+        phase(test17, inactive);
+intTest17(R, S) initiates
+    phase(test17, done) if
+        phase(test17, phaseA);
+intStart initiates
+    perm(go(R, S)) if role(R, hero), place(S, landOfAdventure);
+
+
+
+% TERMINATES: Test 17 ----------
+intTest17(R, S) terminates
+    phase(test17, inactive),
+    perm(go(R, S)) if
+        phase(test17, inactive),
+        role(R, hero),
+        place(S, landOfAdventure);
+intTest17(R, S) terminates
+    phase(test17, phaseA) if
+        phase(test17, phaseA);
+intStart terminates perm(start(test17)), perm(intStart), pow(intStart);
+
+
+
+% GENERATES: Test 17 ----------
+go(R, T) generates
+    intStartQuest if
+        role(R, hero),
+        place(T, landOfAdventure),
+        phase(test17, phaseA);
+
+go(R, S) generates
+    intTest17(R, S) if
+        role(R, hero),
+        place(S, landOfAdventure);
+
+go(R, S) generates
+    intGo(R,S) if
+        role(R, hero),
+        place(S, landOfAdventure);
+
+start(test17) generates intStart;
+
+
+
+
+% INITIALLY: -----------
+initially
+    pow(intTest17(R, S)) if role(R, hero), place(S, landOfAdventure);
+initially
+    perm(intTest17(R, S)) if role(R, hero), place(S, landOfAdventure);
+initially
+    perm(go(R, S)) if role(R, hero), place(S, landOfAdventure);
+initially
+    phase(test17, inactive),
+    role(lukeSkywalker, hero),
+    role(darthVader, villain),
+    role(obiWan, mentor),
+    place(tatooine, home),
+    place(space, away),
+    place(alderaan, forest),
+    place(japan, landOfAdventure),
+    object(lightSaber, weapon),
+    object(sword, weapon);

@@ -1,0 +1,110 @@
+institution macguffin;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: The Macguffin ----------
+exogenous event go(Agent, PlaceName);
+exogenous event find(Agent, ObjectName);
+exogenous event start(Trope);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: The Macguffin ----------
+violation event noViolation;
+
+% INST EVENTS: The Macguffin ----------
+inst event intFind(Agent, ObjectName);
+inst event intGo(Agent, PlaceName);
+inst event intMacguffin(Agent, ObjectName, PlaceName);
+inst event intStart;
+inst event intNoDeadline;
+
+
+
+% INITIATES: The Macguffin ----------
+intMacguffin(R, S, T) initiates
+    phase(macguffin, phaseA),
+    perm(go(R, T)) if
+        phase(macguffin, inactive),
+        role(R, hero),
+        place(T, home);
+intMacguffin(R, S, T) initiates
+    phase(macguffin, done) if
+        phase(macguffin, phaseA);
+intStart initiates
+    perm(find(R, S)) if role(R, hero), object(S, macguffin);
+
+
+
+% TERMINATES: The Macguffin ----------
+intMacguffin(R, S, T) terminates
+    phase(macguffin, inactive),
+    perm(find(R, S)) if
+        phase(macguffin, inactive),
+        role(R, hero),
+        object(S, macguffin);
+intMacguffin(R, S, T) terminates
+    phase(macguffin, phaseA),
+    perm(go(R, T)) if
+        phase(macguffin, phaseA),
+        role(R, hero),
+        place(T, home);
+intStart terminates perm(start(macguffin)), perm(intStart), pow(intStart);
+
+
+
+% GENERATES: The Macguffin ----------
+find(R, S) generates
+    intMacguffin(R, S, T) if
+        role(R, hero),
+        object(S, macguffin);
+go(R, T) generates
+    intMacguffin(R, S, T) if
+        role(R, hero),
+        place(T, home);
+go(R, T) generates
+    intGo(R,T) if
+        role(R, hero),
+        place(T, home);
+find(R, S) generates
+    intFind(R,S) if
+        role(R, hero),
+        object(S, macguffin);
+
+start(macguffin) generates intStart;
+
+
+
+
+% INITIALLY: -----------
+initially
+    pow(intMacguffin(R, S, T)) if role(R, hero), object(S, macguffin), place(T, home);
+initially
+    perm(intMacguffin(R, S, T)) if role(R, hero), object(S, macguffin), place(T, home);
+initially
+    perm(find(R, S)) if role(R, hero), object(S, macguffin);
+initially
+    phase(macguffin, inactive),
+    role(lukeSkywalker, hero),
+    role(darthVader, villain),
+    role(obiWan, mentor),
+    place(tatooine, home),
+    place(space, away),
+    place(alderaan, forest),
+    place(japan, landOfAdventure),
+    object(lightSaber, weapon),
+    object(sword, weapon);

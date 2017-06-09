@@ -1,0 +1,13 @@
+institution fluent_bridge;
+type Inst;
+type X;
+exogenous event source_exevent1(X);
+exogenous event source_exevent2(X);
+fluent source_fluent(X);
+fluent sink_fluent(X);
+cross fluent ipow(Inst,sink_fluent(X),Inst);
+% external and internal events can xinitiate fluents
+source_exevent1(X) xinitiates sink_fluent(X);
+% source_inevent(X) xinitiates sink_fluent(X);
+source_exevent2(X) xterminates sink_fluent(X);
+% initially ipow(source,sink_fluent(X),sink);

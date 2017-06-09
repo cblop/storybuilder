@@ -1,0 +1,9 @@
+bridge b;
+source a;
+sink c;
+
+cross fluent ipow(a, perm(permsink), c);
+
+c xinitiates perm(permsink);
+
+initially ipow(a,perm(permsink),c);

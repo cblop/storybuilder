@@ -1,0 +1,108 @@
+institution quest;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Quest ----------
+exogenous event go(Agent, PlaceName);
+exogenous event start(Trope);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Quest ----------
+violation event noViolation;
+
+% INST EVENTS: Quest ----------
+inst event intGo(Agent, PlaceName);
+inst event intQuest(Agent, PlaceName, PlaceName);
+inst event intStart;
+inst event intNoDeadline;
+
+
+
+% INITIATES: Quest ----------
+intQuest(R, S, T) initiates
+    phase(quest, phaseA),
+    perm(go(R, S)) if
+        phase(quest, inactive),
+        role(R, hero),
+        place(S, home);
+intQuest(R, S, T) initiates
+    phase(quest, done) if
+        phase(quest, phaseA);
+intStart initiates
+    perm(go(R, T)) if role(R, hero), place(T, landOfAdventure);
+
+
+
+% TERMINATES: Quest ----------
+intQuest(R, S, T) terminates
+    phase(quest, inactive),
+    perm(go(R, T)) if
+        phase(quest, inactive),
+        role(R, hero),
+        place(T, landOfAdventure);
+intQuest(R, S, T) terminates
+    phase(quest, phaseA),
+    perm(go(R, S)) if
+        phase(quest, phaseA),
+        role(R, hero),
+        place(S, home);
+intStart terminates perm(start(quest)), perm(intStart), pow(intStart);
+
+
+
+% GENERATES: Quest ----------
+go(R, S) generates
+    intQuest(R, S, T) if
+        role(R, hero),
+        place(S, home);
+go(R, T) generates
+    intQuest(R, S, T) if
+        role(R, hero),
+        place(T, landOfAdventure);
+go(R, S) generates
+    intGo(R,S) if
+        role(R, hero),
+        place(S, home);
+go(R, T) generates
+    intGo(R,T) if
+        role(R, hero),
+        place(T, landOfAdventure);
+
+start(quest) generates intStart;
+
+
+
+
+% INITIALLY: -----------
+initially
+    pow(intQuest(R, S, T)) if role(R, hero), place(S, home), place(T, landOfAdventure);
+initially
+    perm(intQuest(R, S, T)) if role(R, hero), place(S, home), place(T, landOfAdventure);
+initially
+    perm(go(R, T)) if role(R, hero), place(T, landOfAdventure);
+initially
+    phase(quest, inactive),
+    role(lukeSkywalker, hero),
+    role(darthVader, villain),
+    role(obiWan, mentor),
+    place(tatooine, home),
+    place(space, away),
+    place(alderaan, forest),
+    place(japan, landOfAdventure),
+    object(lightSaber, weapon),
+    object(sword, weapon);

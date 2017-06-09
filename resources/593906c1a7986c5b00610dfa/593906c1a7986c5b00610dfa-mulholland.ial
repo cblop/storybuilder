@@ -1,0 +1,176 @@
+institution mulholland;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: mulholland ----------
+exogenous event disobey(Agent, Agent);
+exogenous event arrive(Agent);
+exogenous event visit(Agent, Agent);
+exogenous event cast(Agent, Agent);
+exogenous event go(Agent, PlaceName);
+exogenous event run_away(Agent);
+exogenous event get(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: mulholland ----------
+violation event noViolation;
+
+% INST EVENTS: mulholland ----------
+inst event intCast(Agent, Agent);
+inst event intGet(Agent, ObjectName);
+inst event intGo(Agent, PlaceName);
+inst event intVisit(Agent, Agent);
+inst event intArrive(Agent);
+inst event intDisobey(Agent, Agent);
+inst event intRun_away(Agent);
+inst event intMulholland(Agent, Agent, Agent, Agent, ObjectName, PlaceName, PlaceName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: mulholland ----------
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseA),
+    perm(visit(S, U)) if
+        phase(mulholland, active),
+        role(S, director),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseB),
+    perm(cast(S, T)),
+    perm(disobey(S, U)) if
+        phase(mulholland, phaseA),
+        role(T, mysteryWoman),
+        role(S, director),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseC),
+    perm(run_away(U)) if
+        phase(mulholland, phaseB),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseD),
+    perm(go(R, X)) if
+        phase(mulholland, phaseC),
+        role(R, youngActress),
+        place(X, jealousy);
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseE),
+    perm(get(R, V)) if
+        phase(mulholland, phaseD),
+        role(R, youngActress),
+        object(V, blueKey);
+intMulholland(R, S, T, U, V, W, X) initiates
+    phase(mulholland, phaseF),
+    perm(go(R, W)) if
+        phase(mulholland, phaseE),
+        role(R, youngActress),
+        place(W, hell);
+% TERMINATES: mulholland ----------
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, active),
+    perm(arrive(R)) if
+        phase(mulholland, active),
+        role(R, youngActress);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseA),
+    perm(visit(S, U)) if
+        phase(mulholland, phaseA),
+        role(S, director),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseB),
+    perm(cast(S, T)),
+    perm(disobey(S, U)) if
+        phase(mulholland, phaseB),
+        role(T, mysteryWoman),
+        role(S, director),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseC),
+    perm(run_away(U)) if
+        phase(mulholland, phaseC),
+        role(U, cowboy);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseD),
+    perm(go(R, X)) if
+        phase(mulholland, phaseD),
+        role(R, youngActress),
+        place(X, jealousy);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseE),
+    perm(get(R, V)) if
+        phase(mulholland, phaseE),
+        role(R, youngActress),
+        object(V, blueKey);
+intMulholland(R, S, T, U, V, W, X) terminates
+    phase(mulholland, phaseF),
+    perm(go(R, W)) if
+        phase(mulholland, phaseF),
+        role(R, youngActress),
+        place(W, hell);
+
+
+% GENERATES: mulholland ----------
+arrive(R) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(R, youngActress);
+disobey(S, U) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(S, director),
+        role(U, cowboy);
+visit(S, U) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(S, director),
+        role(U, cowboy);
+go(R, W) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(R, youngActress),
+        place(W, hell);
+go(R, X) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(R, youngActress),
+        place(X, jealousy);
+run_away(U) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(U, cowboy);
+get(R, V) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(R, youngActress),
+        object(V, blueKey);
+cast(S, T) generates
+    intMulholland(R, S, T, U, V, W, X) if
+        role(S, director),
+        role(T, mysteryWoman);
+
+% INITIALLY: -----------
+initially
+    pow(intMulholland(R, S, T, U, V, W, X)) if role(R, youngActress), role(S, director), role(T, mysteryWoman), role(U, cowboy), object(V, blueKey), place(W, hell), place(X, jealousy);
+initially
+    perm(intMulholland(R, S, T, U, V, W, X)) if role(R, youngActress), role(S, director), role(T, mysteryWoman), role(U, cowboy), object(V, blueKey), place(W, hell), place(X, jealousy);
+initially
+    perm(arrive(R)) if role(R, youngActress);
+initially
+    phase(mulholland, active),
+    role(youngActress, youngActress),
+    role(mysteryWoman, mysteryWoman),
+    role(director, director),
+    role(cowboy, cowboy),
+    place(jealousy, jealousy),
+    place(hell, hell),
+    object(blueKey, blueKey);

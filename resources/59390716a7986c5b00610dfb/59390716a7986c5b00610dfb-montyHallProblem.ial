@@ -1,0 +1,129 @@
+institution montyHallProblem;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Monty Hall Problem ----------
+exogenous event arrive(Agent);
+exogenous event choose(Agent, ObjectName);
+exogenous event open(Agent, ObjectName);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Monty Hall Problem ----------
+violation event noViolation;
+
+% INST EVENTS: Monty Hall Problem ----------
+inst event intOpen(Agent, ObjectName);
+inst event intChoose(Agent, ObjectName);
+inst event intArrive(Agent);
+inst event intMontyHallProblem(Agent, Agent, ObjectName, ObjectName, ObjectName);
+inst event intNoDeadline;
+
+
+
+% INITIATES: Monty Hall Problem ----------
+intMontyHallProblem(R, S, T, U, V) initiates
+    phase(montyHallProblem, phaseA),
+    perm(choose(S, V)),
+    perm(choose(S, U)),
+    perm(choose(S, T)) if
+        phase(montyHallProblem, active),
+        object(T, secondGoatDoor),
+        object(U, carDoor),
+        role(S, contestant),
+        object(V, goatDoor);
+intMontyHallProblem(R, S, T, U, V) initiates
+    phase(montyHallProblem, phaseB),
+    perm(open(R, T)) if
+        phase(montyHallProblem, phaseA),
+        role(R, host),
+        object(T, secondGoatDoor);
+intMontyHallProblem(R, S, T, U, V) initiates
+    phase(montyHallProblem, phaseC),
+    perm(choose(S, V)),
+    perm(choose(S, U)) if
+        phase(montyHallProblem, phaseB),
+        object(U, carDoor),
+        role(S, contestant),
+        object(V, goatDoor);
+% TERMINATES: Monty Hall Problem ----------
+intMontyHallProblem(R, S, T, U, V) terminates
+    phase(montyHallProblem, active),
+    perm(arrive(S)) if
+        phase(montyHallProblem, active),
+        role(S, contestant);
+intMontyHallProblem(R, S, T, U, V) terminates
+    phase(montyHallProblem, phaseA),
+    perm(choose(S, V)),
+    perm(choose(S, U)),
+    perm(choose(S, T)) if
+        phase(montyHallProblem, phaseA),
+        object(T, secondGoatDoor),
+        object(U, carDoor),
+        role(S, contestant),
+        object(V, goatDoor);
+intMontyHallProblem(R, S, T, U, V) terminates
+    phase(montyHallProblem, phaseB),
+    perm(open(R, T)) if
+        phase(montyHallProblem, phaseB),
+        role(R, host),
+        object(T, secondGoatDoor);
+intMontyHallProblem(R, S, T, U, V) terminates
+    phase(montyHallProblem, phaseC),
+    perm(choose(S, V)),
+    perm(choose(S, U)) if
+        phase(montyHallProblem, phaseC),
+        object(U, carDoor),
+        role(S, contestant),
+        object(V, goatDoor);
+
+
+% GENERATES: Monty Hall Problem ----------
+choose(S, U) generates
+    intMontyHallProblem(R, S, T, U, V) if
+        role(S, contestant),
+        object(U, carDoor);
+arrive(S) generates
+    intMontyHallProblem(R, S, T, U, V) if
+        role(S, contestant);
+choose(S, T) generates
+    intMontyHallProblem(R, S, T, U, V) if
+        role(S, contestant),
+        object(T, secondGoatDoor);
+open(R, T) generates
+    intMontyHallProblem(R, S, T, U, V) if
+        role(R, host),
+        object(T, secondGoatDoor);
+choose(S, V) generates
+    intMontyHallProblem(R, S, T, U, V) if
+        role(S, contestant),
+        object(V, goatDoor);
+
+% INITIALLY: -----------
+initially
+    pow(intMontyHallProblem(R, S, T, U, V)) if role(R, host), role(S, contestant), object(T, secondGoatDoor), object(U, carDoor), object(V, goatDoor);
+initially
+    perm(intMontyHallProblem(R, S, T, U, V)) if role(R, host), role(S, contestant), object(T, secondGoatDoor), object(U, carDoor), object(V, goatDoor);
+initially
+    perm(arrive(S)) if role(S, contestant);
+initially
+    phase(montyHallProblem, active),
+    role(contestant, contestant),
+    role(host, host),
+    object(carDoor, carDoor),
+    object(goatDoor, goatDoor),
+    object(secondGoatDoor, secondGoatDoor);

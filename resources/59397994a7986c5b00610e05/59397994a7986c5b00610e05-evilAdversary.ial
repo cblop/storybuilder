@@ -1,0 +1,89 @@
+institution evilAdversary;
+% TYPES ----------
+type Identity;
+type Agent;
+type Role;
+type Trope;
+type Phase;
+type Place;
+type PlaceName;
+type Object;
+type ObjectName;
+
+% FLUENTS ----------
+fluent role(Agent, Role);
+fluent phase(Trope, Phase);
+fluent place(PlaceName, Place);
+fluent object(ObjectName, Object);
+
+
+% EXTERNAL EVENTS: Evil Adversary ----------
+exogenous event chase(Agent, Agent);
+exogenous event kill(Agent, Agent);
+exogenous event walk(Agent);
+exogenous event noDeadline;
+
+% VIOLATION EVENTS: Evil Adversary ----------
+violation event noViolation;
+
+% INST EVENTS: Evil Adversary ----------
+inst event intWalk(Agent);
+inst event intKill(Agent, Agent);
+inst event intChase(Agent, Agent);
+inst event intEvilAdversary(Agent, Agent);
+inst event intNoDeadline;
+
+
+
+% INITIATES: Evil Adversary ----------
+intEvilAdversary(R, S) initiates
+    phase(evilAdversary, phaseA),
+    perm(chase(R, S)),
+    perm(kill(R, S)) if
+        phase(evilAdversary, active),
+        role(S, dragon),
+        role(R, hero);
+% TERMINATES: Evil Adversary ----------
+intEvilAdversary(R, S) terminates
+    phase(evilAdversary, active),
+    perm(walk(R)) if
+        phase(evilAdversary, active),
+        role(R, hero);
+intEvilAdversary(R, S) terminates
+    phase(evilAdversary, phaseA),
+    perm(chase(R, S)),
+    perm(kill(R, S)) if
+        phase(evilAdversary, phaseA),
+        role(S, dragon),
+        role(R, hero);
+
+
+% GENERATES: Evil Adversary ----------
+walk(R) generates
+    intEvilAdversary(R, S) if
+        role(R, hero);
+chase(R, S) generates
+    intEvilAdversary(R, S) if
+        role(S, dragon),
+        role(R, hero);
+kill(R, S) generates
+    intEvilAdversary(R, S) if
+        role(R, hero),
+        role(S, dragon);
+
+% INITIALLY: -----------
+initially
+    pow(intEvilAdversary(R, S)) if role(R, hero), role(S, dragon);
+initially
+    perm(intEvilAdversary(R, S)) if role(R, hero), role(S, dragon);
+initially
+    perm(walk(R)) if role(R, hero);
+initially
+    phase(evilAdversary, active),
+    role(villain, villain),
+    role(hero, hero),
+    role(dragon, dragon),
+    role(hero, hero),
+    place(home, home),
+    place(landOfAdventure, landOfAdventure),
+    object(macguffin, macguffin);

@@ -1,0 +1,6 @@
+initially(perm(enterroom(me)), greeting)
+initially(perm(arrives(me)), greeting)
+initially(pow(arrives(me)), greeting)
+initially(perm(timepassed), greeting)
+initially(pow(socialdeadline), greeting)
+initially(perm(socialdeadline), greeting)

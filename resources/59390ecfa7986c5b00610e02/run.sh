@@ -1,0 +1,1 @@
+python3 instal-linux/instalquery.py -v -i resources/constraint.lp resources/59390ecfa7986c5b00610e02/59390ecfa7986c5b00610e02-hopelessSearch.ial -l 5 -n 500 -j resources/59390ecfa7986c5b00610e02/json -d resources/59390ecfa7986c5b00610e02/domain-59390ecfa7986c5b00610e02.idc

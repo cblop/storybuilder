@@ -1,0 +1,1 @@
+python3 instal-linux/instalquery.py -v -i resources/constraint.lp resources/59386ad559111a4be7ec1ef2/59386ad559111a4be7ec1ef2-mulholland.ial -l 5 -n 500 -j resources/59386ad559111a4be7ec1ef2/json -d resources/59386ad559111a4be7ec1ef2/domain-59386ad559111a4be7ec1ef2.idc
