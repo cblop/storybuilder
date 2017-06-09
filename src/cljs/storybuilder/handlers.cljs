@@ -9,7 +9,8 @@
             [storybuilder.gen :refer [make-map]]
             [clojure.string :as str]))
 
-(def host "http://localhost:3449")
+;; (def host "http://localhost:3449")
+(def host "http://163.172.182.16")
 
 (def LIMIT 500)
 (def LOOKAHEAD 5)
