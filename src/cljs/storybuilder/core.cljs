@@ -15,6 +15,7 @@
 
 (defn ^:export init []
   (re-frame/dispatch-sync [:initialize-db])
+  (enable-console-print!)
   (re-frame/dispatch-sync [:load-tropes])
   (re-frame/dispatch-sync [:load-characters])
   (re-frame/dispatch [:load-objects])
