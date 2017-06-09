@@ -93,6 +93,8 @@
    (GET (str host "/tropes/") {:handler #(re-frame/dispatch [:load-tropes-handler %1])
                                :bad-response #(re-frame/dispatch [:bad-response %1])
                                :response-format :json
+                               :access-control-allow-origin "*"
+                               :access-control-allow-methods "GET, POST"
                                :keywords? true})
    db))
 
@@ -104,6 +106,8 @@
        (assoc db :trope-text "")
        (POST (str host "/tropes/delete") {:params {:id @del-id}
                                           :format :json
+                                          :access-control-allow-origin "*"
+                                          :access-control-allow-methods "GET, POST"
                                           :handler #(re-frame/dispatch [:delete-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])}))
      db
@@ -121,6 +125,8 @@
    (GET (str host "/characters/") {:handler #(re-frame/dispatch [:load-characters-handler %1])
                                :bad-response #(re-frame/dispatch [:bad-response %1])
                                :response-format :json
+                                   :access-control-allow-origin "*"
+                                   :access-control-allow-methods "GET, POST"
                                :keywords? true})
    db))
 
@@ -136,6 +142,8 @@
    (GET (str host "/places/") {:handler #(re-frame/dispatch [:load-places-handler %1])
                                    :bad-response #(re-frame/dispatch [:bad-response %1])
                                    :response-format :json
+                               :access-control-allow-origin "*"
+                               :access-control-allow-methods "GET, POST"
                                    :keywords? true})
    db))
 
@@ -152,6 +160,8 @@
    (GET (str host "/objects/") {:handler #(re-frame/dispatch [:load-objects-handler %1])
                                    :bad-response #(re-frame/dispatch [:bad-response %1])
                                    :response-format :json
+                                :access-control-allow-origin "*"
+                                :access-control-allow-methods "GET, POST"
                                    :keywords? true})
    db))
 
@@ -353,6 +363,8 @@
                                           :handler #(re-frame/dispatch [:edit-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
+                                         :access-control-allow-origin "*"
+                                         :access-control-allow-methods "GET, POST"
                                          })
          db)
        (do
@@ -360,6 +372,8 @@
                                           :handler #(re-frame/dispatch [:edit-trope-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
+                                          :access-control-allow-origin "*"
+                                          :access-control-allow-methods "GET, POST"
                                           })
          db)))
    ))
@@ -520,6 +534,8 @@
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
+                                          :access-control-allow-origin "*"
+                                          :access-control-allow-methods "GET, POST"
                                           :response-format :json
                                           :keywords? true})
        db))))
@@ -550,6 +566,8 @@
                                           :handler #(re-frame/dispatch [:story-event-handler %1])
                                           :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
+                                          :access-control-allow-origin "*"
+                                          :access-control-allow-methods "GET, POST"
                                           :response-format :json
                                           :keywords? true
                                           })
@@ -649,6 +667,8 @@
                                        :handler #(re-frame/dispatch [:storygen-handler %1])
                                        :error-handler #(re-frame/dispatch [:error-handler %1])
                                           :format :json
+                                          :access-control-allow-origin "*"
+                                          :access-control-allow-methods "GET, POST"
                                           :response-format :json
                                           :keywords? true
                                           })))
