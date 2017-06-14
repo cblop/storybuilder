@@ -10,7 +10,8 @@
             [clojure.string :as str]))
 
 ;; (def host "http://localhost:3449")
-(def host "http://163.172.182.16")
+;; (def host "http://163.172.182.16")
+(def host "http://mist.cs.bath.ac.uk")
 
 (def LIMIT 500)
 (def LOOKAHEAD 5)
